@@ -1,11 +1,139 @@
-/* FreightFlow - Enhanced Custom Styles with Accessibility */
+/* ========================================
+   FreightFlow - Enhanced Professional Stylesheet
+   Updated for Customer-Focused Design
+   ======================================== */
 
-/* Smooth scrolling */
-html {
-    scroll-behavior: smooth;
+/* ========================================
+   1. CSS VARIABLES
+   ======================================== */
+
+:root {
+    /* Primary Colors */
+    --color-primary: #1e40af;
+    --color-primary-dark: #1e3a8a;
+    --color-primary-light: #3b82f6;
+    --color-secondary: #64748b;
+    --color-accent: #f97316;
+    --color-accent-dark: #ea580c;
+    --color-success: #16a34a;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-dark: #0f172a;
+    
+    /* Grays */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-/* Respect user motion preferences */
+
+/* ========================================
+   2. GLOBAL RESET & BASE STYLES
+   ======================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    color: var(--gray-900);
+    background: white;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+
+/* ========================================
+   3. ACCESSIBILITY
+   ======================================== */
+
+/* Skip to Main Content Link */
+.skip-to-main {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 9999;
+    padding: 1rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    border-radius: 0 0 0.5rem 0;
+    box-shadow: var(--shadow-2xl);
+    transition: var(--transition-fast);
+}
+
+.skip-to-main:focus {
+    left: 0;
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+/* Enhanced Focus States (WCAG 2.2 AAA) */
+*:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Respect User Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -21,58 +149,63 @@ html {
     }
 }
 
-/* Custom scrollbar */
+
+/* ========================================
+   4. CUSTOM SCROLLBAR
+   ======================================== */
+
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 12px;
+    height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: var(--gray-100);
+    border-radius: 0.25rem;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #2563eb;
-    border-radius: 5px;
+    background: var(--color-primary);
+    border-radius: 0.25rem;
+    border: 2px solid var(--gray-100);
+    transition: background var(--transition-base);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #1e40af;
+    background: var(--color-primary-dark);
 }
 
-/* Enhanced focus indicators for accessibility (WCAG 2.2) */
-*:focus {
-    outline: 3px solid #2563eb;
-    outline-offset: 2px;
+/* Firefox Scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--gray-100);
 }
 
-*:focus:not(:focus-visible) {
-    outline: none;
+
+/* ========================================
+   5. ANIMATIONS & KEYFRAMES
+   ======================================== */
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
 }
 
-*:focus-visible {
-    outline: 3px solid #2563eb;
-    outline-offset: 2px;
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.05);
+    }
 }
 
-/* Skip to main content link (accessibility) */
-.skip-to-main {
-    position: absolute;
-    left: -9999px;
-    z-index: 999;
-    padding: 1rem;
-    background: #2563eb;
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.skip-to-main:focus {
-    left: 50%;
-    transform: translateX(-50%);
-    top: 10px;
-}
-
-/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -95,25 +228,41 @@ html {
     }
 }
 
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @keyframes scaleIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: scale(0.95);
     }
     to {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
     }
 }
 
@@ -139,107 +288,451 @@ html {
     }
 }
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
     }
-    50% {
-        opacity: 0.5;
+    to {
+        opacity: 1;
+        max-height: 500px;
     }
 }
 
-@keyframes shimmer {
+@keyframes ripple {
     0% {
-        background-position: -1000px 0;
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7);
     }
     100% {
-        background-position: 1000px 0;
+        box-shadow: 0 0 0 20px rgba(249, 115, 22, 0);
     }
 }
 
-/* Animation classes */
+
+/* ========================================
+   6. ANIMATION UTILITY CLASSES
+   ======================================== */
+
+.float-animation {
+    animation: float 6s ease-in-out infinite;
+}
+
+.pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 .fade-in {
-    animation: fadeIn 0.6s ease-out;
+    animation: fadeIn 0.6s ease-out both;
 }
 
 .fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-.fade-in-down {
-    animation: fadeInDown 0.6s ease-out;
+    animation: fadeInUp 0.6s ease-out both;
 }
 
 .scale-in {
-    animation: scaleIn 0.4s ease-out;
+    animation: scaleIn 0.4s ease-out both;
+}
+
+.bounce-animation {
+    animation: bounce 1s infinite;
 }
 
 .slide-in-left {
-    animation: slideInLeft 0.5s ease-out;
+    animation: slideInLeft 0.5s ease-out both;
 }
 
 .slide-in-right {
-    animation: slideInRight 0.5s ease-out;
+    animation: slideInRight 0.5s ease-out both;
 }
 
-/* Button hover effects */
-button,
-a.button,
+/* Animation Delays */
+.animation-delay-100 {
+    animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+    animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+    animation-delay: 300ms;
+}
+
+.animation-delay-500 {
+    animation-delay: 500ms;
+}
+
+
+/* ========================================
+   7. GLASS MORPHISM
+   ======================================== */
+
+.glass {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+/* ========================================
+   8. BUTTON STYLES
+   ======================================== */
+
 .btn {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    overflow: hidden;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
 }
 
-button:hover:not(:disabled),
-a.button:hover,
-.btn:hover {
+.btn:hover:not(:disabled) {
     transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
 }
 
-button:active:not(:disabled),
-a.button:active,
-.btn:active {
+.btn:active:not(:disabled) {
     transform: translateY(0);
 }
 
-/* Card hover effects */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Button Variants */
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+.btn-accent {
+    background: var(--color-accent);
+    color: white;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+}
+
+.btn-accent:hover {
+    background: var(--color-accent-dark);
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+}
+
+.btn-outline:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-success {
+    background: var(--color-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+.btn-white {
+    background: white;
+    color: var(--color-primary);
+    border: 2px solid white;
+}
+
+.btn-white:hover {
+    background: transparent;
+    color: white;
+}
+
+
+/* ========================================
+   9. CARD EFFECTS
+   ======================================== */
+
 .card-hover {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
+    transition: transform var(--transition-base), 
+                box-shadow var(--transition-base);
 }
 
 .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
-                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-2xl);
 }
 
-/* Loading spinner */
+.card-interactive {
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.card-interactive:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.card-interactive:active {
+    transform: translateY(-4px) scale(1);
+}
+
+
+/* ========================================
+   10. GRADIENT UTILITIES
+   ======================================== */
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-gradient-accent {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+}
+
+.gradient-accent {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+.gradient-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+
+/* ========================================
+   11. BADGE COMPONENTS
+   ======================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-primary {
+    background: rgba(30, 64, 175, 0.1);
+    color: var(--color-primary);
+    border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
+.badge-success {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.badge-warning {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--color-accent);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+
+/* ========================================
+   12. NAVIGATION ENHANCEMENTS
+   ======================================== */
+
+#navbar {
+    transition: box-shadow var(--transition-base), 
+                background var(--transition-base);
+}
+
+#navbar.shadow-xl {
+    box-shadow: var(--shadow-xl);
+}
+
+/* Mobile Menu Transitions */
+#mobile-menu {
+    transition: all var(--transition-base);
+    max-height: 0;
+    overflow: hidden;
+}
+
+#mobile-menu:not(.hidden) {
+    max-height: 600px;
+}
+
+
+/* ========================================
+   13. FORM ENHANCEMENTS
+   ======================================== */
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+    transition: all var(--transition-base);
+}
+
+input:focus:not([type="checkbox"]):not([type="radio"]),
+textarea:focus,
+select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    outline: none;
+}
+
+input:hover:not([type="checkbox"]):not([type="radio"]):not(:focus),
+textarea:hover:not(:focus),
+select:hover:not(:focus) {
+    border-color: var(--gray-400);
+}
+
+.form-error {
+    border-color: var(--color-danger) !important;
+}
+
+.form-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Quote Form Specific Styles */
+#quote-form input::placeholder,
+#quote-form select::placeholder {
+    color: var(--gray-400);
+    opacity: 1;
+}
+
+#quote-result {
+    animation: scaleIn 0.4s ease-out;
+}
+
+
+/* ========================================
+   14. FAQ ACCORDION
+   ======================================== */
+
+.faq-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: color var(--transition-base);
+}
+
+.faq-button:hover {
+    color: var(--color-primary);
+}
+
+.faq-button[aria-expanded="true"] + .faq-content {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+.faq-button[aria-expanded="true"] i[data-lucide="plus"] {
+    transform: rotate(45deg);
+}
+
+.faq-button i {
+    transition: transform var(--transition-base);
+}
+
+.faq-content {
+    display: none;
+}
+
+
+/* ========================================
+   15. LOADING STATES
+   ======================================== */
+
 .spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #2563eb;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--color-primary);
     border-radius: 50%;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.spinner-sm {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
 }
 
-/* Skeleton loading */
+.spinner-lg {
+    width: 60px;
+    height: 60px;
+    border-width: 4px;
+}
+
+/* Skeleton Loading */
 .skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(
+        90deg,
+        var(--gray-100) 25%,
+        var(--gray-200) 50%,
+        var(--gray-100) 75%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
-    border-radius: 4px;
+    border-radius: 0.5rem;
 }
 
 .skeleton-text {
     height: 1rem;
     margin-bottom: 0.5rem;
+    width: 100%;
 }
 
 .skeleton-title {
@@ -248,135 +741,667 @@ a.button:active,
     margin-bottom: 1rem;
 }
 
-.skeleton-avatar {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-}
 
-/* Responsive table */
-@media (max-width: 768px) {
-    table {
-        font-size: 0.875rem;
-    }
-    
-    th, td {
-        padding: 0.5rem !important;
-    }
-}
+/* ========================================
+   16. SHADOWS
+   ======================================== */
 
-/* Custom utility classes */
-.text-gradient {
-    background: linear-gradient(90deg, #2563eb, #0ea5e9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Shadow utilities */
 .shadow-custom {
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 
-                0 2px 4px -1px rgba(37, 99, 235, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.1), 
+                0 2px 4px -1px rgba(30, 64, 175, 0.06);
 }
 
 .shadow-custom-lg {
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1), 
-                0 4px 6px -2px rgba(37, 99, 235, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(30, 64, 175, 0.15), 
+                0 4px 6px -2px rgba(30, 64, 175, 0.1);
 }
 
-/* Glass morphism effect */
-.glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(30, 64, 175, 0.3);
 }
 
-/* Tooltip */
-.tooltip {
+.shadow-glow-accent {
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
+}
+
+
+/* ========================================
+   17. HERO SECTION SPECIFIC
+   ======================================== */
+
+#home {
+    min-height: 100vh;
     position: relative;
 }
 
-.tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-    padding: 0.5rem 0.75rem;
-    background: #1e293b;
-    color: white;
-    font-size: 0.875rem;
-    border-radius: 0.375rem;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
+#home ul li {
+    transition: transform var(--transition-fast);
 }
 
-.tooltip:hover::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-4px);
+#home ul li:hover {
+    transform: translateX(4px);
 }
 
-/* Enhanced transitions */
-.transition-all {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
+
+/* ========================================
+   18. SERVICE CARDS
+   ======================================== */
+
+article h3 {
+    transition: color var(--transition-base);
 }
 
-.transition-smooth {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+article:hover h3 {
+    color: var(--color-primary);
 }
 
-/* Gradient backgrounds */
-.gradient-primary {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+article ul li {
+    transition: transform var(--transition-fast);
 }
 
-.gradient-success {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+article:hover ul li {
+    transform: translateX(4px);
 }
 
-.gradient-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+/* ========================================
+   19. PRICING CARDS
+   ======================================== */
+
+/* Highlight Most Popular Plan */
+#pricing .transform.scale-105 {
+    position: relative;
+    z-index: 10;
 }
 
-.gradient-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-/* Accessibility - High contrast mode support */
-@media (prefers-contrast: high) {
-    * {
-        border-color: currentColor !important;
+@media (max-width: 768px) {
+    #pricing .transform.scale-105 {
+        transform: scale(1) !important;
     }
 }
 
-/* Print styles */
+
+/* ========================================
+   20. TESTIMONIALS
+   ======================================== */
+
+#testimonials article {
+    position: relative;
+}
+
+#testimonials .w-12.h-12 {
+    transition: transform var(--transition-base);
+}
+
+#testimonials article:hover .w-12.h-12 {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Star Rating */
+[data-lucide="star"].fill-current {
+    color: #fbbf24;
+}
+
+
+/* ========================================
+   21. HOW IT WORKS SECTION
+   ======================================== */
+
+#how-it-works .w-32.h-32 {
+    transition: transform var(--transition-base);
+}
+
+#how-it-works .relative:hover .w-32.h-32 {
+    transform: scale(1.1) rotate(5deg);
+}
+
+
+/* ========================================
+   22. FOOTER ENHANCEMENTS
+   ======================================== */
+
+footer a {
+    transition: all var(--transition-base);
+}
+
+footer a:hover {
+    color: var(--color-primary) !important;
+}
+
+footer .w-10.h-10 {
+    transition: all var(--transition-base);
+}
+
+footer .w-10.h-10:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+}
+
+footer nav a i[data-lucide="chevron-right"] {
+    transition: transform var(--transition-base);
+}
+
+footer nav a:hover i[data-lucide="chevron-right"] {
+    transform: translateX(4px);
+}
+
+
+/* ========================================
+   23. SCROLL TO TOP & CHAT BUTTONS
+   ======================================== */
+
+#scroll-top {
+    transition: opacity var(--transition-base), 
+                visibility var(--transition-base),
+                transform var(--transition-base);
+}
+
+#scroll-top.opacity-0 {
+    opacity: 0;
+}
+
+#scroll-top.invisible {
+    visibility: hidden;
+}
+
+#scroll-top:hover {
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 10px 30px rgba(30, 64, 175, 0.4);
+}
+
+#chat-btn {
+    animation: ripple 1.5s infinite;
+}
+
+#chat-btn:hover {
+    animation: none;
+    transform: scale(1.1);
+}
+
+
+/* ========================================
+   24. ANNOUNCEMENT BAR
+   ======================================== */
+
+/* Top announcement bar gradient animation */
+.bg-gradient-to-r {
+    background-size: 200% 100%;
+}
+
+
+/* ========================================
+   25. TRUST BADGES
+   ======================================== */
+
+.grayscale {
+    filter: grayscale(100%);
+    transition: filter var(--transition-base);
+}
+
+.grayscale:hover {
+    filter: grayscale(0%);
+}
+
+
+/* ========================================
+   26. ICON ENHANCEMENTS
+   ======================================== */
+
+[data-lucide] {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Smooth icon transitions */
+a [data-lucide],
+button [data-lucide] {
+    transition: transform var(--transition-base);
+}
+
+a:hover [data-lucide],
+button:hover [data-lucide] {
+    transform: scale(1.1);
+}
+
+/* Link hover with arrow */
+a.group:hover [data-lucide="arrow-right"] {
+    transform: translateX(4px);
+}
+
+a.group:hover [data-lucide="chevron-right"] {
+    transform: translateX(2px);
+}
+
+/* Scale hover for feature cards */
+.group:hover .w-20 {
+    transform: scale(1.1) rotate(5deg);
+}
+
+
+/* ========================================
+   27. RESPONSIVE UTILITIES
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .btn {
+        padding: 0.875rem 1.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9375rem;
+    }
+    
+    h1 {
+        font-size: 2.25rem !important;
+        line-height: 1.2;
+    }
+    
+    h2 {
+        font-size: 1.875rem !important;
+    }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Mobile-specific adjustments */
+    #how-it-works .hidden.md\\:block {
+        display: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    h2 {
+        font-size: 1.75rem !important;
+    }
+}
+
+
+/* ========================================
+   28. PRINT STYLES
+   ======================================== */
+
 @media print {
-    .no-print {
+    .no-print,
+    #navbar,
+    #scroll-top,
+    #chat-btn,
+    footer {
         display: none !important;
     }
     
     body {
         background: white;
+        color: black;
     }
     
-    a[href]::after {
+    a[href^="http"]::after {
         content: " (" attr(href) ")";
+        font-size: 0.875rem;
+        color: var(--gray-600);
     }
 }
 
-/* Performance optimization - will-change for frequently animated elements */
-.animate-performance {
-    will-change: transform, opacity;
+
+/* ========================================
+   29. PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
-/* Remove will-change after animation completes */
-@media (hover: hover) {
-    .animate-performance:hover {
-        will-change: auto;
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+
+/* ========================================
+   30. UTILITY CLASSES
+   ======================================== */
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.select-none {
+    user-select: none;
+}
+
+.transition-all {
+    transition: all var(--transition-base);
+}
+
+.transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.transition-slow {
+    transition: all var(--transition-slow);
+}
+
+.transition-colors {
+    transition: color var(--transition-base),
+                background-color var(--transition-base),
+                border-color var(--transition-base);
+}
+
+
+/* ========================================
+   31. BACKDROP BLUR UTILITIES
+   ======================================== */
+
+.backdrop-blur {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.backdrop-blur-lg {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+
+/* ========================================
+   32. Z-INDEX SCALE
+   ======================================== */
+
+.z-50 {
+    z-index: 50;
+}
+
+.z-40 {
+    z-index: 40;
+}
+
+.z-30 {
+    z-index: 30;
+}
+
+.z-20 {
+    z-index: 20;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+
+/* ========================================
+   33. LINE CLAMP UTILITIES
+   ======================================== */
+
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* ========================================
+   34. ASPECT RATIOS
+   ======================================== */
+
+.aspect-ratio-16-9 {
+    aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-4-3 {
+    aspect-ratio: 4 / 3;
+}
+
+.aspect-ratio-1-1 {
+    aspect-ratio: 1 / 1;
+}
+
+
+/* ========================================
+   35. CUSTOM HOVER EFFECTS
+   ======================================== */
+
+/* Hover lift effect */
+.hover-lift {
+    transition: transform var(--transition-base);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+}
+
+/* Hover glow effect */
+.hover-glow {
+    transition: box-shadow var(--transition-base);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
+}
+
+
+/* ========================================
+   36. NUMBERED BADGE STYLES
+   ======================================== */
+
+/* Step numbers in How It Works section */
+.step-number {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: 4px solid var(--color-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+}
+
+
+/* ========================================
+   37. QUOTE ICON POSITIONING
+   ======================================== */
+
+/* Quote icon in testimonials */
+.testimonial-quote {
+    position: absolute;
+    top: -16px;
+    left: -16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+}
+
+
+/* ========================================
+   38. LIVE INDICATOR
+   ======================================== */
+
+.live-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--color-success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+
+/* ========================================
+   39. CONNECTING LINE (HOW IT WORKS)
+   ======================================== */
+
+.connecting-line {
+    position: relative;
+}
+
+.connecting-line::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+        to right,
+        var(--color-primary) 0%,
+        var(--color-accent) 50%,
+        var(--color-success) 100%
+    );
+    opacity: 0.2;
+    z-index: -1;
+}
+
+
+/* ========================================
+   40. SPECIAL EFFECTS
+   ======================================== */
+
+/* Gradient border effect */
+.gradient-border {
+    position: relative;
+    background: white;
+    border-radius: 1rem;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+/* Shine effect on hover */
+.shine-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shine-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.shine-effect:hover::after {
+    left: 100%;
+}
+
+
+/* ========================================
+   41. MOBILE OPTIMIZATIONS
+   ======================================== */
+
+/* Touch-friendly hit areas on mobile */
+@media (max-width: 768px) {
+    button,
+    a.btn,
+    .faq-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Prevent zoom on input focus (iOS) */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
     }
 }
+
+
+/* ========================================
+   42. DARK MODE SUPPORT (FUTURE)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    /* Uncomment when implementing dark mode */
+    /* 
+    :root {
+        --bg-primary: var(--gray-900);
+        --text-primary: white;
+    }
+    */
+}
+
+
+/* ========================================
+   43. HIGH CONTRAST MODE SUPPORT
+   ======================================== */
+
+@media (prefers-contrast: high) {
+    .btn {
+        border-width: 2px;
+    }
+    
+    *:focus-visible {
+        outline-width: 4px;
+    }
+}
+
+
+/* ========================================
+   END OF STYLESHEET
+   ======================================== */
