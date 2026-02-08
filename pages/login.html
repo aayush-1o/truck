@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
 
     <!-- Tailwind Config -->
     <script>
@@ -46,7 +47,7 @@
                     <i data-lucide="truck" class="w-12 h-12 text-primary"></i>
                     <span class="text-3xl font-bold text-dark">Freight<span class="text-primary">Flow</span></span>
                 </a>
-                <h2 class="text-3xl font-bold text-dark">Welcome Back!</h2>
+                <h2 class="text-3xl font-bold text-dark mt-4">Welcome Back!</h2>
                 <p class="text-secondary mt-2">Sign in to access your dashboard</p>
             </div>
 
@@ -54,28 +55,32 @@
             <div class="bg-white rounded-2xl shadow-xl p-8" data-aos="fade-up">
                 <form id="login-form">
 
-                    <label class="block mb-2 font-semibold">Email</label>
+                    <label class="block mb-2 font-semibold text-dark">Email</label>
                     <input id="login-email" type="email" required
-                        class="w-full mb-4 px-3 py-2 border rounded"
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors"
                         placeholder="you@example.com" />
 
-                    <label class="block mb-2 font-semibold">Password</label>
+                    <label class="block mb-2 font-semibold text-dark">Password</label>
                     <input id="login-password" type="password" required
-                        class="w-full mb-4 px-3 py-2 border rounded"
+                        class="w-full mb-2 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors"
                         placeholder="••••••••" />
 
-                    <button type="submit"
-                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent">
+                    <div class="text-right mb-4">
+                        <a href="forgot-password.html" class="text-sm text-primary hover:underline">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" id="login-btn"
+                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
                         Sign In
                     </button>
 
-                    <p id="login-error" class="hidden text-red-600 mt-4"></p>
                 </form>
 
                 <div class="mt-6 text-center">
                     <p class="text-secondary">
                         Don't have an account?
-                        <a href="register.html" class="text-primary font-semibold">Sign up</a>
+                        <a href="register.html" class="text-primary font-semibold hover:underline">Sign up</a>
                     </p>
                 </div>
             </div>
@@ -94,52 +99,45 @@
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>AOS.init();</script>
 
-    <!-- Backend Login Logic -->
+    <!-- API Client -->
+    <script src="../assets/js/api-client.js"></script>
+
+    <!-- Login Logic -->
     <script>
         document.getElementById("login-form").addEventListener("submit", async function (e) {
             e.preventDefault();
 
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value.trim();
-            const errorBox = document.getElementById("login-error");
+            const loginBtn = document.getElementById("login-btn");
 
-            errorBox.classList.add("hidden");
+            // Show loading state
+            window.API.ui.showLoading(loginBtn, 'Signing in...');
 
             try {
-                const res = await fetch("http://localhost:5000/api/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
+                const response = await window.API.auth.login({ email, password });
 
-                const data = await res.json();
+                if (response.success) {
+                    window.API.ui.showSuccess('Login successful! Redirecting...');
 
-                if (!res.ok) {
-                    errorBox.textContent = data.message || "Invalid email or password.";
-                    errorBox.classList.remove("hidden");
-                    return;
+                    // Redirect based on role
+                    const roleDashboards = {
+                        admin: 'admin-dashboard.html',
+                        shipper: 'shipper-dashboard.html',
+                        driver: 'driver-dashboard.html'
+                    };
+
+                    setTimeout(() => {
+                        window.location.href = roleDashboards[response.user.role] || 'shipper-dashboard.html';
+                    }, 1000);
                 }
-
-                // Save user session
-                localStorage.setItem("freightflow_current_user", JSON.stringify(data.user));
-
-                // Redirect by role
-                if (data.user.role === "shipper") {
-                    window.location.href = "shipper-dashboard.html";
-                } else if (data.user.role === "driver") {
-                    window.location.href = "driver-dashboard.html";
-                } else if (data.user.role === "admin") {
-                    window.location.href = "admin-dashboard.html";
-                } else {
-                    alert("Unknown role. Contact admin.");
-                }
-
-            } catch (err) {
-                errorBox.classList.remove("hidden");
-                errorBox.textContent = "Network error. Try again.";
+            } catch (error) {
+                window.API.ui.handleError(error, 'Login failed. Please check your credentials.');
+                window.API.ui.hideLoading(loginBtn);
             }
         });
     </script>
 
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,10 +27,11 @@
             }
         }
     </script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body class="font-sans bg-light">
@@ -37,7 +39,7 @@
     <!-- SIDEBAR -->
     <aside id="sidebar"
         class="fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-gray-200 transition-transform -translate-x-full lg:translate-x-0">
-        
+
         <div class="h-full px-3 py-4 overflow-y-auto">
 
             <a href="../index.html" class="flex items-center space-x-2 mb-8 px-2">
@@ -54,34 +56,34 @@
                 </li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="briefcase" class="w-5 h-5"></i>
-                    <span class="ml-3">My Jobs</span>
-                </a></li>
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="ml-3">My Jobs</span>
+                    </a></li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="search" class="w-5 h-5"></i>
-                    <span class="ml-3">Browse Jobs</span>
-                </a></li>
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                        <span class="ml-3">Browse Jobs</span>
+                    </a></li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i>
-                    <span class="ml-3">Update Location</span>
-                </a></li>
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                        <span class="ml-3">Update Location</span>
+                    </a></li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-                    <span class="ml-3">Earnings</span>
-                </a></li>
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        <span class="ml-3">Earnings</span>
+                    </a></li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="file-text" class="w-5 h-5"></i>
-                    <span class="ml-3">Documents</span>
-                </a></li>
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                        <span class="ml-3">Documents</span>
+                    </a></li>
 
                 <li><a class="flex items-center p-3 text-secondary hover:bg-light rounded-lg">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                    <span class="ml-3">Settings</span>
-                </a></li>
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span class="ml-3">Settings</span>
+                    </a></li>
             </ul>
 
             <div class="absolute bottom-4 left-0 w-full px-3">
@@ -127,8 +129,7 @@
                         </div>
                     </div>
 
-                    <button id="logout-btn"
-                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <button id="logout-btn" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -218,5 +219,12 @@
         renderJobs(mockJobs);
     </script>
 
+    <!-- API Client -->
+    <script src="../assets/js/api-client.js"></script>
+
+    <!-- Driver Dashboard Script -->
+    <script src="../assets/js/driver-dashboard.js"></script>
+
 </body>
+
 </html>

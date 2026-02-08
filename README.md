@@ -6,8 +6,21 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4%2B-green)](https://www.mongodb.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-5.x-lightgrey)](https://expressjs.com/)
+[![Phase 1](https://img.shields.io/badge/Phase%201-Complete-success)](https://github.com/aayush-1o/truck)
 
 > A comprehensive logistics management system connecting Admins, Shippers, and Drivers through an intuitive platform with real-time tracking, secure authentication, and powerful APIs.
+
+## 🎯 Current Status: **Phase 1 Complete (100%)** ✅
+
+**What's Live:**
+- ✅ Full authentication system (login, register, JWT)
+- ✅ Dynamic dashboards for all roles (Admin, Shipper, Driver)
+- ✅ Real-time data integration with MongoDB
+- ✅ Quote calculator with dynamic pricing
+- ✅ RESTful API with 20+ endpoints
+- ✅ Responsive UI with modern design
+
+**Next Phase:** Real-time tracking, payments, and deployment 🚀
 
 [Features](#-features) • [Quick Start](#-quick-start) • [API Documentation](#-api-documentation) • [Tech Stack](#-tech-stack) • [Documentation](#-documentation)
 
@@ -49,11 +62,62 @@ FreightFlow is a production-ready, full-stack logistics management platform desi
 - ✅ Secure JWT-based authentication
 - ✅ Role-based authorization (Admin, Shipper, Driver)
 - ✅ Password hashing with bcrypt
+- ✅ Protected API routes with middleware
+- ✅ Session management with localStorage
+- ✅ Auto-redirect on authentication status
+
+### 📊 **Dynamic Dashboards** (Phase 1 ✅)
+- ✅ **Admin Dashboard**: User management, platform analytics, shipment monitoring
+- ✅ **Shipper Dashboard**: Create/track shipments, view statistics, manage bookings
+- ✅ **Driver Dashboard**: Assigned jobs, earnings tracker, status updates
+- ✅ Real-time data fetching from MongoDB
+- ✅ Role-based access control
+- ✅ Responsive design for all devices
+
+### 🚚 **Shipment Management**
+- ✅ Complete CRUD operations for shipments
+- ✅ Unique tracking ID generation
+- ✅ Status tracking (Pending → In-Transit → Delivered)
+- ✅ Route visualization (pickup/delivery locations)
+- ✅ Weight and vehicle type management
+- 🔄 Real-time tracking (Phase 2)
+- 🔄 GPS integration (Phase 2)
+
+### 💰 **Quote Calculator** (Phase 1 ✅)
+- ✅ Dynamic price calculation based on:
+  - Distance estimation
+  - Weight multipliers
+  - Vehicle type rates
+  - Fuel costs
+  - Toll charges
+  - Platform fee (15%)
+- ✅ Detailed price breakdown
+- ✅ Real-time calculation
+- ✅ Professional quote display
+
+### 👥 **User Management**
+- ✅ User registration with role selection
+- ✅ Profile management
+- ✅ User statistics and analytics
+- ✅ Admin user management panel
+- 🔄 Email verification (Phase 2)
+- 🔄 Password reset flow (Phase 2)
+
+### 🎨 **Modern UI/UX**
+- ✅ Tailwind CSS styling
+- ✅ Lucide icons
+- ✅ AOS animations
+- ✅ Responsive mobile-first design
+- ✅ Loading states and notifications
+- ✅ Error handling with user feedback
+
+### 🔄 **Upcoming Features** (Phase 2)
+
+- ✅ Password hashing with bcrypt
 - ✅ Password reset via email
 - ✅ Protected API endpoints
 - ✅ Input validation and sanitization
 
-### 📊 **Multi-Role Dashboards**
 
 #### Admin Dashboard
 - User management (create, update, deactivate)

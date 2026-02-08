@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
 
     <!-- Tailwind Config -->
     <script>
@@ -42,14 +42,13 @@
 
             <!-- Logo -->
             <div class="text-center mb-8" data-aos="fade-down">
-                <a href="../index.html"
-                    class="inline-flex items-center space-x-2 mb-6 group">
+                <a href="../index.html" class="inline-flex items-center space-x-2 mb-6 group">
                     <i data-lucide="truck"
                         class="w-12 h-12 text-primary group-hover:scale-110 transition-transform"></i>
-                    <span class="text-3xl font-bold text-dark">Freight<span
-                            class="text-primary">Flow</span></span>
+                    <span class="text-3xl font-bold text-dark">Freight<span class="text-primary">Flow</span></span>
                 </a>
                 <h2 class="text-3xl font-bold text-dark">Create Your Account</h2>
+                <p class="text-secondary mt-2">Join thousands of users on FreightFlow</p>
             </div>
 
             <!-- Form -->
@@ -57,56 +56,58 @@
                 <form id="register-form" novalidate>
 
                     <!-- Full Name -->
-                    <label class="block mb-2 font-semibold">Full Name</label>
-                    <input id="fullname" type="text" required
-                        class="w-full mb-4 px-3 py-2 border rounded" />
+                    <label class="block mb-2 font-semibold text-dark">Full Name</label>
+                    <input id="fullname" type="text" required placeholder="John Doe"
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors" />
 
                     <!-- Email -->
-                    <label class="block mb-2 font-semibold">Email</label>
-                    <input id="email" type="email" required
-                        class="w-full mb-4 px-3 py-2 border rounded" />
+                    <label class="block mb-2 font-semibold text-dark">Email</label>
+                    <input id="email" type="email" required placeholder="you@example.com"
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors" />
 
                     <!-- Phone -->
-                    <label class="block mb-2 font-semibold">Phone</label>
-                    <input id="phone" type="text" required
-                        class="w-full mb-4 px-3 py-2 border rounded" />
+                    <label class="block mb-2 font-semibold text-dark">Phone</label>
+                    <input id="phone" type="tel" required placeholder="9876543210" pattern="[0-9]{10}"
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors" />
 
                     <!-- Role -->
-                    <label class="block mb-2 font-semibold">Role</label>
+                    <label class="block mb-2 font-semibold text-dark">I am a</label>
                     <select id="role" required
-                        class="w-full mb-4 px-3 py-2 border rounded">
-                        <option value="">Select role</option>
-                        <option value="shipper">Shipper</option>
-                        <option value="driver">Driver</option>
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors">
+                        <option value="">Select your role</option>
+                        <option value="shipper">Shipper - I want to book trucks</option>
+                        <option value="driver">Driver - I want to offer my services</option>
                     </select>
 
                     <!-- Password -->
-                    <label class="block mb-2 font-semibold">Password</label>
-                    <input id="password" type="password" required
-                        class="w-full mb-4 px-3 py-2 border rounded" />
+                    <label class="block mb-2 font-semibold text-dark">Password</label>
+                    <input id="password" type="password" required placeholder="Minimum 6 characters" minlength="6"
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors" />
 
                     <!-- Confirm Password -->
-                    <label class="block mb-2 font-semibold">Confirm Password</label>
-                    <input id="confirm-password" type="password" required
-                        class="w-full mb-4 px-3 py-2 border rounded" />
+                    <label class="block mb-2 font-semibold text-dark">Confirm Password</label>
+                    <input id="confirm-password" type="password" required placeholder="Re-enter password"
+                        class="w-full mb-6 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors" />
 
                     <!-- Submit Button -->
-                    <button type="submit"
-                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent">
+                    <button type="submit" id="register-btn"
+                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
                         Create Account
                     </button>
 
-                    <!-- Messages -->
-                    <p id="error-message" class="text-red-600 mt-4 hidden"></p>
-                    <p id="success-message" class="text-green-600 mt-4 hidden"></p>
                 </form>
 
                 <div class="mt-6 text-center">
                     <p class="text-secondary">
                         Already have an account?
-                        <a href="login.html" class="text-primary font-semibold">Sign In</a>
+                        <a href="login.html" class="text-primary font-semibold hover:underline">Sign In</a>
                     </p>
                 </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <a href="../index.html" class="text-sm text-secondary hover:text-primary">← Back to Home</a>
             </div>
         </div>
     </div>
@@ -119,7 +120,10 @@
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>AOS.init();</script>
 
-    <!-- REAL Signup Logic (MongoDB via Node Backend) -->
+    <!-- API Client -->
+    <script src="../assets/js/api-client.js"></script>
+
+    <!-- Registration Logic -->
     <script>
         document.getElementById("register-form").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -130,59 +134,56 @@
             const role = document.getElementById("role").value.trim();
             const password = document.getElementById("password").value.trim();
             const confirmPassword = document.getElementById("confirm-password").value.trim();
+            const registerBtn = document.getElementById("register-btn");
 
-            const errorBox = document.getElementById("error-message");
-            const successBox = document.getElementById("success-message");
-
-            errorBox.classList.add("hidden");
-            successBox.classList.add("hidden");
+            // Validation
+            if (!fullname || !email || !phone || !role || !password || !confirmPassword) {
+                window.API.ui.showError("All fields are required!");
+                return;
+            }
 
             if (password !== confirmPassword) {
-                errorBox.textContent = "Passwords do not match!";
-                errorBox.classList.remove("hidden");
+                window.API.ui.showError("Passwords do not match!");
                 return;
             }
 
-            if (!fullname || !email || !phone || !role || !password) {
-                errorBox.textContent = "All fields are required!";
-                errorBox.classList.remove("hidden");
+            if (password.length < 6) {
+                window.API.ui.showError("Password must be at least 6 characters!");
                 return;
             }
+
+            // Phone validation
+            if (!/^[0-9]{10}$/.test(phone)) {
+                window.API.ui.showError("Please enter a valid 10-digit phone number!");
+                return;
+            }
+
+            // Show loading
+            window.API.ui.showLoading(registerBtn, 'Creating account...');
 
             try {
-                const res = await fetch("http://localhost:5000/api/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: fullname,
-                        email,
-                        phone,
-                        role,
-                        password
-                    }),
+                const response = await window.API.auth.register({
+                    name: fullname,
+                    email,
+                    phone,
+                    role,
+                    password
                 });
 
-                const data = await res.json();
+                if (response.success) {
+                    window.API.ui.showSuccess('Account created successfully! Redirecting to login...');
 
-                if (!res.ok) {
-                    errorBox.textContent = data.message || "Registration failed.";
-                    errorBox.classList.remove("hidden");
-                    return;
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 1500);
                 }
-
-                successBox.textContent = "Account created! Redirecting...";
-                successBox.classList.remove("hidden");
-
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 1500);
-
-            } catch (err) {
-                errorBox.textContent = "Network error. Try again.";
-                errorBox.classList.remove("hidden");
+            } catch (error) {
+                window.API.ui.handleError(error, 'Registration failed. Please try again.');
+                window.API.ui.hideLoading(registerBtn);
             }
         });
     </script>
 
 </body>
+
 </html>

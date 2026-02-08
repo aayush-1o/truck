@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>shipper Dashboard - FreightFlow</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/style.css">
-    
+
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -30,24 +31,27 @@
             }
         }
     </script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body class="font-sans bg-light">
-    
+
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen bg-dark text-white border-r border-gray-700 transition-transform -translate-x-full lg:translate-x-0">
+    <aside id="sidebar"
+        class="fixed top-0 left-0 z-40 w-64 h-screen bg-dark text-white border-r border-gray-700 transition-transform -translate-x-full lg:translate-x-0">
         <div class="h-full px-3 py-4 overflow-y-auto">
             <!-- Logo -->
             <a href="../index.html" class="flex items-center space-x-2 mb-8 px-2">
                 <i data-lucide="truck" class="w-8 h-8 text-primary"></i>
                 <span class="text-xl font-bold">FreightFlow</span>
-                <span class="ml-2 px-2 py-0.5 bg-red-600 text-xs font-bold rounded">ADMIN</span>
+                <span class="ml-2 px-2 py-0.5 bg-blue-600 text-xs font-bold rounded">SHIPPER</span>
             </a>
-            
+
             <!-- Navigation -->
             <ul class="space-y-2">
                 <li>
@@ -57,43 +61,50 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="users" class="w-5 h-5"></i>
                         <span class="ml-3">Users</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="truck" class="w-5 h-5"></i>
                         <span class="ml-3">Shipments</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="dollar-sign" class="w-5 h-5"></i>
                         <span class="ml-3">Payments</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="bar-chart" class="w-5 h-5"></i>
                         <span class="ml-3">Analytics</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="alert-circle" class="w-5 h-5"></i>
                         <span class="ml-3">Support Tickets</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="file-text" class="w-5 h-5"></i>
                         <span class="ml-3">Reports</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
+                    <a href="#"
+                        class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-800 group transition-colors">
                         <i data-lucide="settings" class="w-5 h-5"></i>
                         <span class="ml-3">Settings</span>
                     </a>
@@ -101,7 +112,7 @@
             </ul>
         </div>
     </aside>
-    
+
     <!-- Main Content -->
     <div class="lg:ml-64">
         <!-- Top Navigation -->
@@ -113,29 +124,27 @@
                     </button>
                     <h1 class="text-xl font-semibold text-dark ml-2">Admin Dashboard</h1>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <!-- Search -->
                     <div class="hidden md:flex items-center">
                         <div class="relative">
-                            <input 
-                                type="text" 
-                                placeholder="Search users, shipments..." 
-                                class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                            >
+                            <input type="text" placeholder="Search users, shipments..."
+                                class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm">
                             <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-2.5"></i>
                         </div>
                     </div>
-                    
+
                     <!-- Notifications -->
                     <button class="relative p-2 text-secondary hover:bg-light rounded-lg">
                         <i data-lucide="bell" class="w-5 h-5"></i>
                         <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
-                    
+
                     <!-- User Menu -->
                     <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-semibold" id="user-avatar">
+                        <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-semibold"
+                            id="user-avatar">
                             A
                         </div>
                         <div class="hidden md:block">
@@ -143,7 +152,7 @@
                             <p class="text-xs text-secondary">admin@demo.com</p>
                         </div>
                     </div>
-                    
+
                     <!-- Logout -->
                     <button id="logout-btn" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -151,7 +160,7 @@
                 </div>
             </div>
         </nav>
-        
+
         <!-- Page Content -->
         <main class="p-4 pt-20">
             <!-- Welcome Section -->
@@ -159,7 +168,7 @@
                 <h2 class="text-2xl font-bold mb-2">Welcome, <span id="welcome-name">Admin</span>! 👨‍💼</h2>
                 <p class="text-red-100">Platform Overview - All Systems Operational</p>
             </div>
-            
+
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <!-- Total Users -->
@@ -168,7 +177,8 @@
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <i data-lucide="users" class="w-6 h-6 text-primary"></i>
                         </div>
-                        <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+8.2%</span>
+                        <span
+                            class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+8.2%</span>
                     </div>
                     <h3 class="text-2xl font-bold text-dark mb-1" id="stat-users">1,247</h3>
                     <p class="text-sm text-secondary">Total Users</p>
@@ -177,7 +187,7 @@
                         <span>🚛 552 Drivers</span>
                     </div>
                 </div>
-                
+
                 <!-- Active Shipments -->
                 <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
@@ -189,55 +199,61 @@
                     <h3 class="text-2xl font-bold text-dark mb-1" id="stat-shipments">342</h3>
                     <p class="text-sm text-secondary">Active Shipments</p>
                 </div>
-                
+
                 <!-- Revenue -->
                 <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <i data-lucide="trending-up" class="w-6 h-6 text-purple-600"></i>
                         </div>
-                        <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+12.5%</span>
+                        <span
+                            class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+12.5%</span>
                     </div>
                     <h3 class="text-2xl font-bold text-dark mb-1">₹8.4L</h3>
                     <p class="text-sm text-secondary">Revenue (This Month)</p>
                 </div>
-                
+
                 <!-- Support Tickets -->
                 <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                             <i data-lucide="alert-circle" class="w-6 h-6 text-orange-600"></i>
                         </div>
-                        <span class="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pending</span>
+                        <span
+                            class="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pending</span>
                     </div>
                     <h3 class="text-2xl font-bold text-dark mb-1" id="stat-tickets">23</h3>
                     <p class="text-sm text-secondary">Support Tickets</p>
                 </div>
             </div>
-            
+
             <!-- Quick Actions -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-dark mb-4">Quick Actions</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button class="flex flex-col items-center justify-center space-y-2 bg-primary text-white p-4 rounded-lg hover:bg-accent transition-all">
+                    <button
+                        class="flex flex-col items-center justify-center space-y-2 bg-primary text-white p-4 rounded-lg hover:bg-accent transition-all">
                         <i data-lucide="user-plus" class="w-6 h-6"></i>
                         <span class="text-sm font-medium">Add User</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center space-y-2 bg-white text-primary border-2 border-primary p-4 rounded-lg hover:bg-primary hover:text-white transition-all">
+                    <button
+                        class="flex flex-col items-center justify-center space-y-2 bg-white text-primary border-2 border-primary p-4 rounded-lg hover:bg-primary hover:text-white transition-all">
                         <i data-lucide="settings" class="w-6 h-6"></i>
                         <span class="text-sm font-medium">Settings</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center space-y-2 bg-white text-secondary border-2 border-gray-300 p-4 rounded-lg hover:bg-light transition-all">
+                    <button
+                        class="flex flex-col items-center justify-center space-y-2 bg-white text-secondary border-2 border-gray-300 p-4 rounded-lg hover:bg-light transition-all">
                         <i data-lucide="bar-chart" class="w-6 h-6"></i>
                         <span class="text-sm font-medium">Analytics</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center space-y-2 bg-white text-secondary border-2 border-gray-300 p-4 rounded-lg hover:bg-light transition-all">
+                    <button
+                        class="flex flex-col items-center justify-center space-y-2 bg-white text-secondary border-2 border-gray-300 p-4 rounded-lg hover:bg-light transition-all">
                         <i data-lucide="file-text" class="w-6 h-6"></i>
                         <span class="text-sm font-medium">Reports</span>
                     </button>
                 </div>
             </div>
-            
+
             <!-- Recent Activity & User Management -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Recent Activity -->
@@ -247,12 +263,13 @@
                         <!-- Activity will be populated by JavaScript -->
                     </div>
                 </div>
-                
+
                 <!-- User Management -->
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-dark">User Management</h2>
-                        <select id="filter-role" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <select id="filter-role"
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="all">All Roles</option>
                             <option value="shipper">Shippers</option>
                             <option value="driver">Drivers</option>
@@ -265,50 +282,50 @@
             </div>
         </main>
     </div>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
     </script>
-    
+
     <!-- Dashboard Logic (no DB, uses session + mock data) -->
     <script>
         // Check authentication (any logged-in user with role=admin ideally)
-        const currentUser = JSON.parse(localStorage.getItem('freightflow_current_user')) || 
-                            JSON.parse(sessionStorage.getItem('freightflow_current_user') || 'null');
-        
+        const currentUser = JSON.parse(localStorage.getItem('freightflow_current_user')) ||
+            JSON.parse(sessionStorage.getItem('freightflow_current_user') || 'null');
+
         if (!currentUser) {
             window.location.href = 'login.html';
         }
-        
+
         // Display user info
         if (currentUser) {
             document.getElementById('user-name').textContent = currentUser.fullname || 'Admin';
             document.getElementById('welcome-name').textContent = (currentUser.fullname || 'Admin').split(' ')[0];
             document.getElementById('user-avatar').textContent = (currentUser.fullname || 'A').charAt(0).toUpperCase();
         }
-        
+
         // Sidebar toggle
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
-        
+
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
             });
         }
-        
+
         // Close sidebar on mobile when clicking outside
         document.addEventListener('click', (e) => {
-            if (window.innerWidth < 1024 && 
-                !sidebar.contains(e.target) && 
+            if (window.innerWidth < 1024 &&
+                !sidebar.contains(e.target) &&
                 !sidebarToggle.contains(e.target) &&
                 !sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.add('-translate-x-full');
             }
         });
-        
+
         // Logout functionality
         document.getElementById('logout-btn').addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
@@ -317,7 +334,7 @@
                 window.location.href = 'login.html';
             }
         });
-        
+
         // Mock activity data
         const mockActivity = [
             { user: 'Rajesh Kumar', action: 'Accepted Shipment #SH045', role: 'Driver', time: '2 mins ago', status: 'success' },
@@ -326,7 +343,7 @@
             { user: 'Neha Patel', action: 'Raised support ticket', role: 'Shipper', time: '2 hours ago', status: 'warning' },
             { user: 'Vikram Reddy', action: 'Updated location', role: 'Driver', time: '3 hours ago', status: 'info' }
         ];
-        
+
         // Mock users data
         const mockUsers = [
             { name: 'Rajesh Kumar', email: 'rajesh@example.com', role: 'driver', status: 'active', joined: '2024-11-15' },
@@ -335,21 +352,21 @@
             { name: 'Neha Patel', email: 'neha@example.com', role: 'shipper', status: 'inactive', joined: '2024-11-20' },
             { name: 'Vikram Reddy', email: 'vikram@example.com', role: 'driver', status: 'active', joined: '2024-11-12' }
         ];
-        
+
         // Render activity log
         function renderActivity() {
             const container = document.getElementById('activity-log');
             container.innerHTML = '';
-            
+
             const statusIcons = {
                 'success': { icon: 'check-circle', color: 'text-green-600 bg-green-100' },
                 'info': { icon: 'info', color: 'text-blue-600 bg-blue-100' },
                 'warning': { icon: 'alert-circle', color: 'text-orange-600 bg-orange-100' }
             };
-            
+
             mockActivity.forEach(activity => {
                 const statusInfo = statusIcons[activity.status];
-                
+
                 const item = document.createElement('div');
                 item.className = 'flex items-start space-x-3 p-3 hover:bg-light rounded-lg transition-colors';
                 item.innerHTML = `
@@ -364,19 +381,19 @@
                 `;
                 container.appendChild(item);
             });
-            
+
             lucide.createIcons();
         }
-        
+
         // Render users list
         function renderUsers(users) {
             const container = document.getElementById('users-list');
             container.innerHTML = '';
-            
+
             users.forEach(user => {
                 const roleColor = user.role === 'driver' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
                 const statusColor = user.status === 'active' ? 'bg-green-500' : 'bg-gray-400';
-                
+
                 const item = document.createElement('div');
                 item.className = 'flex items-center justify-between p-3 hover:bg-light rounded-lg transition-colors';
                 item.innerHTML = `
@@ -398,14 +415,14 @@
                 `;
                 container.appendChild(item);
             });
-            
+
             lucide.createIcons();
         }
-        
+
         // Initial render
         renderActivity();
         renderUsers(mockUsers);
-        
+
         // Filter users
         document.getElementById('filter-role').addEventListener('change', (e) => {
             const role = e.target.value;
@@ -413,5 +430,12 @@
             renderUsers(filtered);
         });
     </script>
+
+    <!-- API Client -->
+    <script src="../assets/js/api-client.js"></script>
+
+    <!-- Shipper Dashboard Script -->
+    <script src="../assets/js/shipper-dashboard.js"></script>
 </body>
+
 </html>
