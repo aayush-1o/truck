@@ -26,18 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initDashboard();
 });
 
-
 // Dashboard initialization
 async function initDashboard() {
     const currentUser = window.API.userManager.getUser();
-
-    // Display user info
     displayUserInfo(currentUser);
-
-    // Setup event listeners
     setupEventListeners();
-
-    // Load dashboard data
     await loadDashboardData();
 }
 
@@ -47,17 +40,16 @@ function displayUserInfo(user) {
     const userEmail = user.email || '';
     const initials = userName.charAt(0).toUpperCase();
 
-    // Update user display elements
-    const userNameElements = document.querySelectorAll('#user-name, #welcome-name');
-    userNameElements.forEach(el => {
-        if (el) el.textContent = userName.split(' ')[0];
-    });
+    const userNameEl = document.getElementById('user-name');
+    const welcomeNameEl = document.getElementById('welcome-name');
+    if (userNameEl) userNameEl.textContent = userName.split(' ')[0];
+    if (welcomeNameEl) welcomeNameEl.textContent = userName.split(' ')[0];
 
     const userAvatarElement = document.getElementById('user-avatar');
     if (userAvatarElement) userAvatarElement.textContent = initials;
 
-    const userEmailElement = document.querySelector('.text-xs.text-secondary');
-    if (userEmailElement) userEmailElement.textContent = userEmail;
+    const userEmailElements = document.querySelectorAll('.user-email');
+    userEmailElements.forEach(el => { if (el) el.textContent = userEmail; });
 }
 
 // Setup event listeners
@@ -81,7 +73,6 @@ function setupEventListeners() {
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        // Close sidebar when clicking outside (mobile)
         document.addEventListener('click', (e) => {
             if (window.innerWidth < 1024 &&
                 !sidebar.contains(e.target) &&
@@ -101,8 +92,26 @@ function setupEventListeners() {
     // Shipment status filter
     const statusFilter = document.getElementById('filter-status');
     if (statusFilter) {
-        statusFilter.addEventListener('change', (e) => {
-            filterShipments(e.target.value);
+        statusFilter.addEventListener('change', (e) => filterShipments(e.target.value));
+    }
+
+    // Open modal button
+    const openModalBtn = document.getElementById('open-create-shipment');
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', showCreateShipmentModal);
+    }
+
+    // Close modal button
+    const closeModalBtn = document.getElementById('close-create-shipment');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', hideCreateShipmentModal);
+    }
+
+    // Close modal on backdrop click
+    const modal = document.getElementById('create-shipment-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideCreateShipmentModal();
         });
     }
 }
@@ -110,27 +119,17 @@ function setupEventListeners() {
 // Load all dashboard data
 async function loadDashboardData() {
     try {
-        // Show loading state
         showLoading();
-
-        // Fetch shipments
         const shipmentsResponse = await window.API.shipments.getAll();
 
         if (shipmentsResponse.success) {
-            const shipments = shipmentsResponse.data || shipmentsResponse.shipments || [];
-
-            // Update statistics
+            const shipments = shipmentsResponse.data || [];
             updateStatistics(shipments);
-
-            // Render shipments table
             renderShipments(shipments);
-
-            // Store shipments for filtering
             window.dashboardData = { shipments };
         }
 
         hideLoading();
-
     } catch (error) {
         hideLoading();
         window.API.ui.handleError(error, 'Failed to load dashboard data');
@@ -142,11 +141,10 @@ function updateStatistics(shipments) {
     const stats = {
         total: shipments.length,
         pending: shipments.filter(s => s.status === 'pending').length,
-        inTransit: shipments.filter(s => s.status === 'in-transit').length,
+        inTransit: shipments.filter(s => s.status === 'in-transit' || s.status === 'picked-up').length,
         delivered: shipments.filter(s => s.status === 'delivered').length
     };
 
-    // Update stat elements
     const statTotal = document.getElementById('stat-total-shipments');
     const statPending = document.getElementById('stat-pending');
     const statInTransit = document.getElementById('stat-in-transit');
@@ -180,7 +178,6 @@ function renderShipments(shipments) {
         return;
     }
 
-    // Create table
     const table = document.createElement('div');
     table.className = 'overflow-x-auto';
     table.innerHTML = `
@@ -204,7 +201,6 @@ function renderShipments(shipments) {
     container.appendChild(table);
 
     const tbody = document.getElementById('shipments-table-body');
-
     shipments.forEach(shipment => {
         const row = createShipmentRow(shipment);
         tbody.appendChild(row);
@@ -220,31 +216,38 @@ function createShipmentRow(shipment) {
 
     const statusColors = {
         'pending': 'bg-yellow-100 text-yellow-700',
-        'confirmed': 'bg-blue-100 text-blue-700',
+        'assigned': 'bg-blue-100 text-blue-700',
+        'picked-up': 'bg-indigo-100 text-indigo-700',
         'in-transit': 'bg-purple-100 text-purple-700',
         'delivered': 'bg-green-100 text-green-700',
         'cancelled': 'bg-red-100 text-red-700'
     };
 
     const statusColor = statusColors[shipment.status] || 'bg-gray-100 text-gray-700';
-    const date = new Date(shipment.createdAt || shipment.date).toLocaleDateString();
+    const date = new Date(shipment.createdAt).toLocaleDateString('en-IN');
+
+    // Fixed: use nested field paths from Shipment model
+    const pickupAddress = shipment.pickupLocation?.address || shipment.pickupLocation || 'N/A';
+    const deliveryAddress = shipment.deliveryLocation?.address || shipment.deliveryLocation || 'N/A';
+    const weight = shipment.cargo?.weight || 'N/A';
+    const totalPrice = shipment.pricing?.totalPrice;
 
     row.innerHTML = `
         <td class="px-4 py-4">
             <div class="flex items-center">
                 <i data-lucide="hash" class="w-4 h-4 text-gray-400 mr-2"></i>
-                <span class="font-mono text-sm font-medium">${shipment.trackingId || shipment._id.slice(-8)}</span>
+                <span class="font-mono text-sm font-medium">${shipment.trackingId || shipment._id?.slice(-8)}</span>
             </div>
         </td>
         <td class="px-4 py-4">
             <div class="text-sm">
                 <div class="flex items-center text-gray-900 font-medium">
-                    <i data-lucide="map-pin" class="w-3 h-3 text-green-600 mr-1"></i>
-                    ${shipment.pickupLocation || 'N/A'}
+                    <i data-lucide="map-pin" class="w-3 h-3 text-green-600 mr-1 flex-shrink-0"></i>
+                    <span class="truncate max-w-[140px]">${pickupAddress}</span>
                 </div>
                 <div class="flex items-center text-gray-500 mt-1">
-                    <i data-lucide="flag" class="w-3 h-3 text-red-600 mr-1"></i>
-                    ${shipment.deliveryLocation || 'N/A'}
+                    <i data-lucide="flag" class="w-3 h-3 text-red-600 mr-1 flex-shrink-0"></i>
+                    <span class="truncate max-w-[140px]">${deliveryAddress}</span>
                 </div>
             </div>
         </td>
@@ -253,23 +256,20 @@ function createShipmentRow(shipment) {
                 ${shipment.status}
             </span>
         </td>
-        <td class="px-4 py-4 text-sm text-gray-900">
-            ${shipment.weight || 'N/A'} kg
-        </td>
+        <td class="px-4 py-4 text-sm text-gray-900">${weight} kg</td>
         <td class="px-4 py-4 text-sm font-medium text-gray-900">
-            ₹${shipment.price ? shipment.price.toLocaleString() : 'N/A'}
+            ${totalPrice ? `₹${totalPrice.toLocaleString('en-IN')}` : 'N/A'}
         </td>
-        <td class="px-4 py-4 text-sm text-gray-500">
-            ${date}
-        </td>
+        <td class="px-4 py-4 text-sm text-gray-500">${date}</td>
         <td class="px-4 py-4 text-sm font-medium">
             <div class="flex items-center gap-2">
                 <button onclick="viewShipmentDetails('${shipment._id}')" class="text-primary hover:text-accent" title="View Details">
                     <i data-lucide="eye" class="w-4 h-4"></i>
                 </button>
-                <button onclick="trackShipment('${shipment.trackingId || shipment._id}')" class="text-green-600 hover:text-green-700" title="Track">
-                    <i data-lucide="map" class="w-4 h-4"></i>
-                </button>
+                ${shipment.status === 'pending' ? `
+                <button onclick="cancelShipment('${shipment._id}')" class="text-red-500 hover:text-red-700" title="Cancel">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                </button>` : ''}
             </div>
         </td>
     `;
@@ -280,28 +280,37 @@ function createShipmentRow(shipment) {
 // Filter shipments by status
 function filterShipments(status) {
     if (!window.dashboardData || !window.dashboardData.shipments) return;
-
     const filteredShipments = status === 'all'
         ? window.dashboardData.shipments
         : window.dashboardData.shipments.filter(s => s.status === status);
-
     renderShipments(filteredShipments);
 }
 
 // Handle create shipment form submission
 async function handleCreateShipment(e) {
     e.preventDefault();
-
     const form = e.target;
-    const formData = new FormData(form);
+
+    // Build payload matching backend's flexible format
+    const pickupLocation = form.querySelector('#pickup-location')?.value?.trim();
+    const deliveryLocation = form.querySelector('#delivery-location')?.value?.trim();
+    const weight = form.querySelector('#cargo-weight')?.value;
+    const vehicleType = form.querySelector('#vehicle-type')?.value;
+    const cargoDescription = form.querySelector('#cargo-description')?.value?.trim();
+    const pickupDate = form.querySelector('#pickup-date')?.value;
+
+    if (!pickupLocation || !deliveryLocation || !weight || !vehicleType) {
+        window.API.ui.showError('Please fill in all required fields');
+        return;
+    }
 
     const shipmentData = {
-        pickupLocation: formData.get('pickupLocation'),
-        deliveryLocation: formData.get('deliveryLocation'),
-        weight: parseFloat(formData.get('weight')),
-        vehicleType: formData.get('vehicleType'),
-        cargoDescription: formData.get('cargoDescription'),
-        price: parseFloat(formData.get('price'))
+        pickupLocation,         // backend accepts string → wraps in { address: ... }
+        deliveryLocation,
+        weight: parseFloat(weight),
+        vehicleType,
+        cargoDescription,
+        pickupDate: pickupDate || new Date().toISOString()
     };
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -309,19 +318,30 @@ async function handleCreateShipment(e) {
 
     try {
         const response = await window.API.shipments.create(shipmentData);
-
         if (response.success) {
             window.API.ui.showSuccess('Shipment created successfully!');
             form.reset();
             hideCreateShipmentModal();
-
-            // Reload dashboard data
             await loadDashboardData();
         }
     } catch (error) {
         window.API.ui.handleError(error, 'Failed to create shipment');
     } finally {
         window.API.ui.hideLoading(submitBtn);
+    }
+}
+
+// Cancel shipment
+async function cancelShipment(shipmentId) {
+    if (!confirm('Are you sure you want to cancel this shipment?')) return;
+    try {
+        const response = await window.API.shipments.cancel(shipmentId);
+        if (response.success) {
+            window.API.ui.showSuccess('Shipment cancelled successfully');
+            await loadDashboardData();
+        }
+    } catch (error) {
+        window.API.ui.handleError(error, 'Failed to cancel shipment');
     }
 }
 
@@ -336,25 +356,42 @@ function hideLoading() {
     if (loadingEl) loadingEl.classList.add('hidden');
 }
 
-// View shipment details
+// View shipment details (basic modal)
 function viewShipmentDetails(shipmentId) {
-    // Show details modal or navigate to details page
-    alert(`View details for shipment: ${shipmentId}\n(Details page coming in Phase 2)`);
+    window.API.shipments.getById(shipmentId).then(response => {
+        if (response.success) {
+            const s = response.data;
+            const pickup = s.pickupLocation?.address || s.pickupLocation || 'N/A';
+            const delivery = s.deliveryLocation?.address || s.deliveryLocation || 'N/A';
+            alert(
+                `📦 Shipment Details\n\n` +
+                `Tracking ID: ${s.trackingId}\n` +
+                `Status: ${s.status}\n` +
+                `Pickup: ${pickup}\n` +
+                `Delivery: ${delivery}\n` +
+                `Weight: ${s.cargo?.weight} kg\n` +
+                `Vehicle: ${s.cargo?.vehicleType}\n` +
+                `Price: ₹${s.pricing?.totalPrice?.toLocaleString('en-IN') || 'N/A'}`
+            );
+        }
+    }).catch(() => {
+        window.API.ui.showError('Could not load shipment details');
+    });
 }
 
-// Track shipment
-function trackShipment(trackingId) {
-    // Navigate to tracking page
-    window.location.href = `tracking.html?id=${trackingId}`;
-}
-
-// Show/hide create shipment modal (if exists)
+// Show/hide create shipment modal
 function showCreateShipmentModal() {
     const modal = document.getElementById('create-shipment-modal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
 }
 
 function hideCreateShipmentModal() {
     const modal = document.getElementById('create-shipment-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }

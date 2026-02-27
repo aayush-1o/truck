@@ -78,7 +78,7 @@ class APIClient {
      */
     getHeaders(customHeaders = {}) {
         const headers = { ...this.defaultHeaders, ...customHeaders };
-        
+
         const token = TokenManager.getToken();
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
@@ -96,12 +96,14 @@ class APIClient {
             const error = await response.json().catch(() => ({
                 message: response.statusText || 'An error occurred'
             }));
-            
+
             // Handle authentication errors
             if (response.status === 401) {
                 TokenManager.removeToken();
                 UserManager.removeUser();
-                window.location.href = '/pages/login.html';
+                // Use relative redirect so it works on both localhost:5000 and live server
+                const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
+                window.location.href = loginPath;
             }
 
             throw {
@@ -218,7 +220,9 @@ const AuthAPI = {
     logout() {
         TokenManager.removeToken();
         UserManager.removeUser();
-        window.location.href = '/pages/login.html';
+        // Relative redirect works with both localhost:5000 and Live Server
+        const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
+        window.location.href = loginPath;
     },
 
     /**
@@ -393,6 +397,13 @@ const DriverAPI = {
      */
     async toggleAvailability(isAvailable) {
         return await api.patch('/drivers/availability', { isAvailable });
+    },
+
+    /**
+     * Get driver statistics (Phase 2 endpoint)
+     */
+    async getStats() {
+        return await api.get('/drivers/stats');
     },
 
     /**

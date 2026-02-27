@@ -3,57 +3,122 @@ const router = express.Router();
 const Shipment = require('../models/Shipment');
 const Driver = require('../models/Driver');
 const { protect, authorize } = require('../middleware/auth');
-const { validateShipment, validateStatusUpdate, validateObjectId, handleValidationErrors } = require('../middleware/validator');
+const { validateObjectId, handleValidationErrors } = require('../middleware/validator');
+
+// ===============================================================
+// IMPORTANT: /track/:trackingId MUST come BEFORE /:id
+// Otherwise Express treats "track" as a MongoDB ObjectId
+// ===============================================================
+
+// @route   GET /api/shipments/track/:trackingId
+// @desc    Public shipment tracking
+// @access  Public
+router.get('/track/:trackingId', async (req, res) => {
+    try {
+        const shipment = await Shipment.findOne({
+            trackingId: req.params.trackingId.toUpperCase()
+        })
+            .select('trackingId status statusHistory pickupLocation deliveryLocation estimatedDeliveryDate actualDeliveryDate cargo pricing')
+            .lean();
+
+        if (!shipment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Shipment not found with this tracking ID'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: shipment
+        });
+    } catch (error) {
+        console.error('Track shipment error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to track shipment',
+            error: error.message
+        });
+    }
+});
 
 // @route   POST /api/shipments
 // @desc    Create new shipment
 // @access  Private (Shipper only)
-router.post('/',
-    protect,
-    authorize('shipper'),
-    validateShipment,
-    handleValidationErrors,
-    async (req, res) => {
-        try {
-            const { pickupLocation, deliveryLocation, cargo, pickupDate, notes } = req.body;
+router.post('/', protect, authorize('shipper'), async (req, res) => {
+    try {
+        const { pickupLocation, deliveryLocation, cargo, pickupDate, notes, weight, vehicleType, cargoDescription, price } = req.body;
 
-            // Calculate pricing (simplified - in production, use actual distance calculation)
-            const estimatedDistance = 100; // km - replace with actual calculation
-            const pricing = Shipment.calculatePricing(
-                estimatedDistance,
-                cargo.vehicleType,
-                cargo.value || 0
-            );
+        // Support both nested object format and flat format from the frontend form
+        const normalizedPickup = typeof pickupLocation === 'string'
+            ? { address: pickupLocation }
+            : pickupLocation;
 
-            // Create shipment
-            const shipment = await Shipment.create({
-                shipper: req.user._id,
-                pickupLocation,
-                deliveryLocation,
-                cargo,
-                pickupDate,
-                pricing,
-                notes
-            });
+        const normalizedDelivery = typeof deliveryLocation === 'string'
+            ? { address: deliveryLocation }
+            : deliveryLocation;
 
-            // Populate shipper details
-            await shipment.populate('shipper', 'name email phone');
+        // Support both nested cargo and flat fields
+        const normalizedCargo = cargo || {
+            weight: parseFloat(weight) || 0,
+            vehicleType: vehicleType || 'Standard Truck (14ft)',
+            description: cargoDescription || ''
+        };
 
-            res.status(201).json({
-                success: true,
-                message: 'Shipment created successfully',
-                data: shipment
-            });
-        } catch (error) {
-            console.error('Create shipment error:', error);
-            res.status(500).json({
+        if (!normalizedPickup?.address || !normalizedDelivery?.address) {
+            return res.status(400).json({
                 success: false,
-                message: 'Failed to create shipment',
-                error: error.message
+                message: 'Pickup and delivery addresses are required'
             });
         }
+
+        if (!normalizedCargo.weight || !normalizedCargo.vehicleType) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cargo weight and vehicle type are required'
+            });
+        }
+
+        // Calculate pricing
+        const estimatedDistance = 100; // km — placeholder (Phase 3: real geocoding)
+        const pricing = Shipment.calculatePricing(
+            estimatedDistance,
+            normalizedCargo.vehicleType,
+            normalizedCargo.value || 0
+        );
+
+        // If price was manually specified, use it
+        if (price) {
+            pricing.totalPrice = parseFloat(price);
+        }
+
+        // Create shipment
+        const shipment = await Shipment.create({
+            shipper: req.user._id,
+            pickupLocation: normalizedPickup,
+            deliveryLocation: normalizedDelivery,
+            cargo: normalizedCargo,
+            pickupDate: pickupDate || new Date(),
+            pricing,
+            notes
+        });
+
+        await shipment.populate('shipper', 'name email phone');
+
+        res.status(201).json({
+            success: true,
+            message: 'Shipment created successfully',
+            data: shipment
+        });
+    } catch (error) {
+        console.error('Create shipment error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create shipment',
+            error: error.message
+        });
     }
-);
+});
 
 // @route   GET /api/shipments
 // @desc    Get all shipments (filtered by role)
@@ -62,19 +127,16 @@ router.get('/', protect, async (req, res) => {
     try {
         let filter = {};
 
-        // Filter based on user role
         if (req.user.role === 'shipper') {
             filter.shipper = req.user._id;
         } else if (req.user.role === 'driver') {
-            // Find driver profile
             const driver = await Driver.findOne({ user: req.user._id });
             if (driver) {
                 filter.driver = driver._id;
             }
         }
-        // Admin can see all shipments
+        // Admin sees all
 
-        // Apply status filter if provided
         if (req.query.status) {
             filter.status = req.query.status;
         }
@@ -121,10 +183,10 @@ router.get('/:id',
                 });
             }
 
-            // Check authorization
             const isShipper = shipment.shipper._id.toString() === req.user._id.toString();
             const driver = await Driver.findOne({ user: req.user._id });
-            const isDriver = driver && shipment.driver && shipment.driver._id.toString() === driver._id.toString();
+            const isDriver = driver && shipment.driver &&
+                shipment.driver._id.toString() === driver._id.toString();
             const isAdmin = req.user.role === 'admin';
 
             if (!isShipper && !isDriver && !isAdmin) {
@@ -156,11 +218,18 @@ router.patch('/:id/status',
     protect,
     authorize('driver', 'admin'),
     validateObjectId('id'),
-    validateStatusUpdate,
     handleValidationErrors,
     async (req, res) => {
         try {
             const { status, location, note } = req.body;
+
+            const validStatuses = ['pending', 'assigned', 'picked-up', 'in-transit', 'delivered', 'cancelled'];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+                });
+            }
 
             const shipment = await Shipment.findById(req.params.id);
 
@@ -171,7 +240,6 @@ router.patch('/:id/status',
                 });
             }
 
-            // Update status with history
             shipment.updateStatus(status, location, note || '');
             await shipment.save();
 
@@ -210,7 +278,6 @@ router.put('/:id',
                 });
             }
 
-            // Check if user is the shipper or admin
             if (req.user.role !== 'admin' && shipment.shipper.toString() !== req.user._id.toString()) {
                 return res.status(403).json({
                     success: false,
@@ -218,16 +285,8 @@ router.put('/:id',
                 });
             }
 
-            // Only allow updates if shipment is pending
-            if (shipment.status !== 'pending') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Can only update pending shipments'
-                });
-            }
-
-            // Update shipment
-            const allowedUpdates = ['pickupLocation', 'deliveryLocation', 'cargo', 'pickupDate', 'notes'];
+            // Allow status updates from driver-dashboard.js which calls PUT (not PATCH)
+            const allowedUpdates = ['pickupLocation', 'deliveryLocation', 'cargo', 'pickupDate', 'notes', 'status'];
             const updates = {};
 
             allowedUpdates.forEach(field => {
@@ -235,6 +294,16 @@ router.put('/:id',
                     updates[field] = req.body[field];
                 }
             });
+
+            // If only updating status, allow even if not pending
+            if (Object.keys(updates).length === 1 && updates.status) {
+                // Status-only update, always allowed for authorized user
+            } else if (shipment.status !== 'pending') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Can only edit details of pending shipments'
+                });
+            }
 
             shipment = await Shipment.findByIdAndUpdate(
                 req.params.id,
@@ -277,7 +346,6 @@ router.delete('/:id',
                 });
             }
 
-            // Check authorization
             if (req.user.role !== 'admin' && shipment.shipper.toString() !== req.user._id.toString()) {
                 return res.status(403).json({
                     success: false,
@@ -285,7 +353,6 @@ router.delete('/:id',
                 });
             }
 
-            // Can only cancel if not delivered
             if (shipment.status === 'delivered') {
                 return res.status(400).json({
                     success: false,
@@ -311,35 +378,5 @@ router.delete('/:id',
         }
     }
 );
-
-// @route   GET /api/shipments/track/:trackingId
-// @desc    Public shipment tracking
-// @access  Public
-router.get('/track/:trackingId', async (req, res) => {
-    try {
-        const shipment = await Shipment.findOne({ trackingId: req.params.trackingId.toUpperCase() })
-            .select('trackingId status statusHistory pickupLocation deliveryLocation estimatedDeliveryDate actualDeliveryDate')
-            .lean();
-
-        if (!shipment) {
-            return res.status(404).json({
-                success: false,
-                message: 'Shipment not found with this tracking ID'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: shipment
-        });
-    } catch (error) {
-        console.error('Track shipment error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to track shipment',
-            error: error.message
-        });
-    }
-});
 
 module.exports = router;

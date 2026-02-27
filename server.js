@@ -22,6 +22,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname)); // Serve static files (HTML, CSS, JS) from project root
 
 // ENV
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/freightflow';

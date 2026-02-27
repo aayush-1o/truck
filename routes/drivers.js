@@ -12,11 +12,16 @@ const { validateDriver, validateLocation, validateObjectId, handleValidationErro
 router.post('/',
     protect,
     authorize('driver', 'admin'),
-    validateDriver,
-    handleValidationErrors,
     async (req, res) => {
         try {
             const { vehicleType, vehicleNumber, licenseNumber } = req.body;
+
+            if (!vehicleType || !vehicleNumber || !licenseNumber) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Vehicle type, vehicle number, and license number are required'
+                });
+            }
 
             // Check if driver profile already exists
             const existingDriver = await Driver.findOne({ user: req.user._id });
@@ -52,46 +57,55 @@ router.post('/',
     }
 );
 
-// @route   GET /api/drivers
-// @desc    Get all drivers
-// @access  Private (Admin or Shipper)
-router.get('/',
-    protect,
-    authorize('admin', 'shipper'),
-    async (req, res) => {
-        try {
-            const filter = {};
+// @route   GET /api/drivers/stats
+// @desc    Get driver statistics (earnings, trips, rating)
+// @access  Private (Driver)
+router.get('/stats', protect, authorize('driver'), async (req, res) => {
+    try {
+        const driver = await Driver.findOne({ user: req.user._id });
 
-            // Filter by availability if specified
-            if (req.query.available !== undefined) {
-                filter.availability = req.query.available === 'true';
-            }
-
-            // Filter by vehicle type if specified
-            if (req.query.vehicleType) {
-                filter.vehicleType = req.query.vehicleType;
-            }
-
-            const drivers = await Driver.find(filter)
-                .populate('user', 'name email phone')
-                .sort({ 'rating.average': -1 })
-                .limit(parseInt(req.query.limit) || 50);
-
-            res.json({
+        if (!driver) {
+            return res.json({
                 success: true,
-                count: drivers.length,
-                data: drivers
-            });
-        } catch (error) {
-            console.error('Get drivers error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to fetch drivers',
-                error: error.message
+                data: {
+                    totalEarnings: 0,
+                    totalTrips: 0,
+                    completedTrips: 0,
+                    rating: 0,
+                    available: true
+                }
             });
         }
+
+        // Get shipments assigned to this driver
+        const shipments = await Shipment.find({ driver: driver._id })
+            .select('status pricing createdAt');
+
+        const completedShipments = shipments.filter(s => s.status === 'delivered');
+        const totalEarnings = completedShipments.reduce((sum, s) => {
+            return sum + ((s.pricing?.totalPrice || 0) * 0.7); // Driver gets 70%
+        }, 0);
+
+        res.json({
+            success: true,
+            data: {
+                totalEarnings: Math.round(totalEarnings),
+                totalTrips: shipments.length,
+                completedTrips: completedShipments.length,
+                rating: driver.rating?.average || 0,
+                available: driver.availability,
+                statistics: driver.statistics
+            }
+        });
+    } catch (error) {
+        console.error('Get driver stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch driver statistics',
+            error: error.message
+        });
     }
-);
+});
 
 // @route   GET /api/drivers/profile
 // @desc    Get current driver profile
@@ -126,14 +140,51 @@ router.get('/profile',
     }
 );
 
+// @route   GET /api/drivers
+// @desc    Get all drivers
+// @access  Private (Admin or Shipper)
+router.get('/',
+    protect,
+    authorize('admin', 'shipper'),
+    async (req, res) => {
+        try {
+            const filter = {};
+
+            if (req.query.available !== undefined) {
+                filter.availability = req.query.available === 'true';
+            }
+
+            if (req.query.vehicleType) {
+                filter.vehicleType = req.query.vehicleType;
+            }
+
+            const drivers = await Driver.find(filter)
+                .populate('user', 'name email phone')
+                .sort({ 'rating.average': -1 })
+                .limit(parseInt(req.query.limit) || 50);
+
+            res.json({
+                success: true,
+                count: drivers.length,
+                data: drivers
+            });
+        } catch (error) {
+            console.error('Get drivers error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch drivers',
+                error: error.message
+            });
+        }
+    }
+);
+
 // @route   PUT /api/drivers/location
 // @desc    Update driver location
 // @access  Private (Driver)
 router.put('/location',
     protect,
     authorize('driver'),
-    validateLocation,
-    handleValidationErrors,
     async (req, res) => {
         try {
             const { lat, lng, address, city } = req.body;
@@ -147,7 +198,7 @@ router.put('/location',
                 });
             }
 
-            driver.updateLocation(lat, lng, address, city);
+            driver.updateLocation(lat || 0, lng || 0, address || '', city || '');
             await driver.save();
 
             res.json({
@@ -183,7 +234,12 @@ router.patch('/availability',
                 });
             }
 
-            driver.toggleAvailability();
+            // Support both toggle and explicit set
+            if (req.body.isAvailable !== undefined) {
+                driver.availability = req.body.isAvailable;
+            } else {
+                driver.toggleAvailability();
+            }
             await driver.save();
 
             res.json({
@@ -221,17 +277,22 @@ router.get('/earnings',
                 });
             }
 
-            // Get recent shipments
-            const recentShipments = await Shipment.find({ driver: req.user._id })
+            const recentShipments = await Shipment.find({ driver: driver._id })
                 .select('trackingId status pricing createdAt')
                 .sort({ createdAt: -1 })
                 .limit(10);
+
+            const completedShipments = recentShipments.filter(s => s.status === 'delivered');
+            const totalEarnings = completedShipments.reduce((sum, s) => {
+                return sum + ((s.pricing?.totalPrice || 0) * 0.7);
+            }, 0);
 
             res.json({
                 success: true,
                 data: {
                     statistics: driver.statistics,
                     rating: driver.rating,
+                    totalEarnings: Math.round(totalEarnings),
                     recentShipments
                 }
             });

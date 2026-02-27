@@ -3,8 +3,7 @@
  * Fetches real user and shipment data from backend API
  */
 
-// Initialize dashboard on
-load
+// Initialize dashboard on load
 document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication
     if (!window.API.auth.isAuthenticated()) {

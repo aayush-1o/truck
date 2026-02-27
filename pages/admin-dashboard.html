@@ -10,7 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
 
     <!-- Tailwind Config -->
     <script>
@@ -149,7 +149,7 @@
                         </div>
                         <div class="hidden md:block">
                             <p class="text-sm font-medium text-dark" id="user-name">Admin</p>
-                            <p class="text-xs text-secondary">admin@demo.com</p>
+                            <p class="text-xs text-secondary user-email"></p>
                         </div>
                     </div>
 
@@ -289,153 +289,13 @@
         lucide.createIcons();
     </script>
 
-    <!-- Dashboard Logic (no DB, uses session + mock data) -->
-    <script>
-        // Check authentication (any logged-in user with role=admin ideally)
-        const currentUser = JSON.parse(localStorage.getItem('freightflow_current_user')) ||
-            JSON.parse(sessionStorage.getItem('freightflow_current_user') || 'null');
-
-        if (!currentUser) {
-            window.location.href = 'login.html';
-        }
-
-        // Display user info
-        if (currentUser) {
-            document.getElementById('user-name').textContent = currentUser.fullname || 'Admin';
-            document.getElementById('welcome-name').textContent = (currentUser.fullname || 'Admin').split(' ')[0];
-            document.getElementById('user-avatar').textContent = (currentUser.fullname || 'A').charAt(0).toUpperCase();
-        }
-
-        // Sidebar toggle
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        // Close sidebar on mobile when clicking outside
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth < 1024 &&
-                !sidebar.contains(e.target) &&
-                !sidebarToggle.contains(e.target) &&
-                !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
-            }
-        });
-
-        // Logout functionality
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('freightflow_current_user');
-                sessionStorage.removeItem('freightflow_current_user');
-                window.location.href = 'login.html';
-            }
-        });
-
-        // Mock activity data
-        const mockActivity = [
-            { user: 'Rajesh Kumar', action: 'Accepted Shipment #SH045', role: 'Driver', time: '2 mins ago', status: 'success' },
-            { user: 'Priya Sharma', action: 'Created new shipment', role: 'Shipper', time: '15 mins ago', status: 'info' },
-            { user: 'Amit Singh', action: 'Completed delivery', role: 'Driver', time: '1 hour ago', status: 'success' },
-            { user: 'Neha Patel', action: 'Raised support ticket', role: 'Shipper', time: '2 hours ago', status: 'warning' },
-            { user: 'Vikram Reddy', action: 'Updated location', role: 'Driver', time: '3 hours ago', status: 'info' }
-        ];
-
-        // Mock users data
-        const mockUsers = [
-            { name: 'Rajesh Kumar', email: 'rajesh@example.com', role: 'driver', status: 'active', joined: '2024-11-15' },
-            { name: 'Priya Sharma', email: 'priya@example.com', role: 'shipper', status: 'active', joined: '2024-11-18' },
-            { name: 'Amit Singh', email: 'amit@example.com', role: 'driver', status: 'active', joined: '2024-11-10' },
-            { name: 'Neha Patel', email: 'neha@example.com', role: 'shipper', status: 'inactive', joined: '2024-11-20' },
-            { name: 'Vikram Reddy', email: 'vikram@example.com', role: 'driver', status: 'active', joined: '2024-11-12' }
-        ];
-
-        // Render activity log
-        function renderActivity() {
-            const container = document.getElementById('activity-log');
-            container.innerHTML = '';
-
-            const statusIcons = {
-                'success': { icon: 'check-circle', color: 'text-green-600 bg-green-100' },
-                'info': { icon: 'info', color: 'text-blue-600 bg-blue-100' },
-                'warning': { icon: 'alert-circle', color: 'text-orange-600 bg-orange-100' }
-            };
-
-            mockActivity.forEach(activity => {
-                const statusInfo = statusIcons[activity.status];
-
-                const item = document.createElement('div');
-                item.className = 'flex items-start space-x-3 p-3 hover:bg-light rounded-lg transition-colors';
-                item.innerHTML = `
-                    <div class="w-8 h-8 ${statusInfo.color} rounded-full flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="${statusInfo.icon}" class="w-4 h-4"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm text-dark font-medium">${activity.user}</p>
-                        <p class="text-sm text-secondary">${activity.action}</p>
-                        <p class="text-xs text-secondary mt-1">${activity.time} • ${activity.role}</p>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-
-            lucide.createIcons();
-        }
-
-        // Render users list
-        function renderUsers(users) {
-            const container = document.getElementById('users-list');
-            container.innerHTML = '';
-
-            users.forEach(user => {
-                const roleColor = user.role === 'driver' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
-                const statusColor = user.status === 'active' ? 'bg-green-500' : 'bg-gray-400';
-
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-3 hover:bg-light rounded-lg transition-colors';
-                item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold">
-                            ${user.name.charAt(0)}
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-dark">${user.name}</p>
-                            <p class="text-xs text-secondary">${user.email}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="px-2 py-1 ${roleColor} rounded-full text-xs font-medium capitalize">
-                            ${user.role}
-                        </span>
-                        <div class="w-2 h-2 ${statusColor} rounded-full"></div>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-
-            lucide.createIcons();
-        }
-
-        // Initial render
-        renderActivity();
-        renderUsers(mockUsers);
-
-        // Filter users
-        document.getElementById('filter-role').addEventListener('change', (e) => {
-            const role = e.target.value;
-            const filtered = role === 'all' ? mockUsers : mockUsers.filter(u => u.role === role);
-            renderUsers(filtered);
-        });
-    </script>
-
-    <!-- API Client -->
+    <!-- API Client (must load first) -->
     <script src="../assets/js/api-client.js"></script>
 
     <!-- Admin Dashboard Script -->
     <script src="../assets/js/admin-dashboard.js"></script>
+
+
 </body>
 
 </html>
