@@ -5,6 +5,7 @@ const Driver = require('../models/Driver');
 const { protect, authorize } = require('../middleware/auth');
 const { validateObjectId, handleValidationErrors } = require('../middleware/validator');
 const { sendShipmentAssigned, sendShipmentDelivered } = require('../utils/email');
+const { getDistanceKm } = require('../utils/geocoding');
 
 // ===============================================================
 // IMPORTANT: /track/:trackingId MUST come BEFORE /:id
@@ -80,8 +81,12 @@ router.post('/', protect, authorize('shipper'), async (req, res) => {
             });
         }
 
-        // Calculate pricing
-        const estimatedDistance = 100; // km — placeholder (Phase 3: real geocoding)
+        // Calculate pricing using real driving distance via OpenRouteService
+        // Falls back to 100km automatically if ORS_API_KEY is not configured
+        const estimatedDistance = await getDistanceKm(
+            normalizedPickup.address,
+            normalizedDelivery.address
+        );
         const pricing = Shipment.calculatePricing(
             estimatedDistance,
             normalizedCargo.vehicleType,

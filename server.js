@@ -5,6 +5,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -13,7 +14,7 @@ const crypto = require('crypto');
 const User = require('./models/User');
 
 // Import middleware
-const { generateToken } = require('./middleware/auth');
+const { generateToken, generateAccessToken, generateRefreshToken, REFRESH_COOKIE_OPTIONS } = require('./middleware/auth');
 const { validateRegister, validateLogin, handleValidationErrors } = require('./middleware/validator');
 
 // Import utils
@@ -104,6 +105,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser()); // Required for HttpOnly refresh token cookie
 // Serve static files ONLY from /public — prevents .env, seed.js, etc. from being downloadable
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -210,20 +212,24 @@ app.post('/api/login', authLimiter, validateLogin, handleValidationErrors, async
             });
         }
 
-        // Generate JWT token
-        const token = generateToken(user._id, user.role);
+        // Generate tokens: short-lived access + long-lived refresh
+        const accessToken = generateAccessToken(user._id, user.role);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Refresh token goes in an HttpOnly cookie — JS cannot read it
+        res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
 
         res.json({
             success: true,
-            message: "Login successful",
-            token,
+            message: 'Login successful',
+            token: accessToken,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
                 role: user.role,
-                fullname: user.name // For compatibility with existing frontend
+                fullname: user.name
             }
         });
 
@@ -388,6 +394,46 @@ app.get('/api/health', (req, res) => {
 });
 
 // ===============================
+// TOKEN REFRESH
+// ===============================
+app.post('/api/refresh', async (req, res) => {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(401).json({ success: false, message: 'No refresh token provided' });
+    }
+
+    try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(
+            refreshToken,
+            process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + '_refresh'
+        );
+
+        const user = await User.findById(decoded.id).select('role isActive');
+        if (!user || !user.isActive) {
+            res.clearCookie('refreshToken');
+            return res.status(401).json({ success: false, message: 'User not found or inactive' });
+        }
+
+        const newAccessToken = generateAccessToken(user._id, user.role);
+        res.json({ success: true, token: newAccessToken });
+
+    } catch (err) {
+        res.clearCookie('refreshToken');
+        return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
+    }
+});
+
+// ===============================
+// LOGOUT
+// ===============================
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('refreshToken');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// ===============================
 // ERROR HANDLER
 // ===============================
 app.use((err, req, res, next) => {
@@ -400,19 +446,26 @@ app.use((err, req, res, next) => {
 });
 
 // ===============================
-// START SERVER
+// START SERVER (only when run directly, not when imported by tests)
 // ===============================
-connectDB().then(() => {
-    httpServer.listen(port, () => {
-        console.log(`🚀 Server running: http://localhost:${port}`);
-        console.log(`🔌 Socket.io ready for real-time events`);
-        if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'rzp_test_YOUR_KEY_ID') {
-            console.log(`⚠️  Razorpay not configured — add RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET to .env to enable payments`);
-        } else {
-            console.log(`💳 Razorpay payment gateway active`);
-        }
+if (require.main === module) {
+    connectDB().then(() => {
+        httpServer.listen(port, () => {
+            console.log(`🚀 Server running: http://localhost:${port}`);
+            console.log(`🔌 Socket.io ready for real-time events`);
+            if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'rzp_test_YOUR_KEY_ID') {
+                console.log(`⚠️  Razorpay not configured — add RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET to .env`);
+            } else {
+                console.log(`💳 Razorpay payment gateway active`);
+            }
+            if (!process.env.ORS_API_KEY) {
+                console.log(`⚠️  ORS_API_KEY not set — pricing uses fallback 100km distance`);
+            } else {
+                console.log(`🗺️  Geocoding active via OpenRouteService`);
+            }
+        });
     });
-});
+}
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
@@ -420,3 +473,6 @@ process.on('SIGINT', async () => {
     await mongoose.connection.close();
     process.exit(0);
 });
+
+// Export for tests — allows supertest to import without starting the HTTP server
+module.exports = { app, httpServer };

@@ -102,20 +102,48 @@ class APIClient {
     }
 
     /**
-     * Handle API response
+     * Handle API response — includes silent token refresh on 401.
+     * If an access token has expired, we automatically hit /api/refresh,
+     * get a new access token from the HttpOnly cookie, and retry the
+     * original request once. If refresh also fails, redirect to login.
      */
-    async handleResponse(response) {
-        // Check if response is ok
+    async handleResponse(response, method, endpoint, options) {
         if (!response.ok) {
             const error = await response.json().catch(() => ({
                 message: response.statusText || 'An error occurred'
             }));
 
-            // Handle authentication errors
-            if (response.status === 401) {
+            // Handle authentication errors — attempt silent refresh first
+            if (response.status === 401 && !this._isRefreshing && endpoint !== '/refresh') {
+                this._isRefreshing = true;
+                try {
+                    const baseURL = this.baseURL.replace('/api', '');
+                    const refreshRes = await fetch(`${baseURL}/api/refresh`, {
+                        method: 'POST',
+                        credentials: 'include' // Sends the HttpOnly refreshToken cookie
+                    });
+
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json();
+                        TokenManager.setToken(refreshData.token);
+                        this._isRefreshing = false;
+                        // Retry the original request with the new access token
+                        return this.request(method, endpoint, options);
+                    }
+                } catch (refreshErr) {
+                    // Refresh attempt itself failed — fall through to redirect
+                } finally {
+                    this._isRefreshing = false;
+                }
+
+                // Refresh failed — clear everything and redirect to login
                 TokenManager.removeToken();
                 UserManager.removeUser();
-                // Use relative redirect so it works on both localhost:5000 and live server
+                const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
+                window.location.href = loginPath;
+            } else if (response.status === 401) {
+                TokenManager.removeToken();
+                UserManager.removeUser();
                 const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
                 window.location.href = loginPath;
             }
@@ -142,6 +170,7 @@ class APIClient {
         const config = {
             method,
             headers,
+            credentials: 'include', // Send HttpOnly refresh cookie with every request
             ...otherOptions
         };
 
@@ -151,13 +180,11 @@ class APIClient {
 
         try {
             const response = await fetch(url, config);
-            return await this.handleResponse(response);
+            return await this.handleResponse(response, method, endpoint, options);
         } catch (error) {
             if (error.status) {
-                // API error with status
                 throw error;
             } else {
-                // Network error or other
                 throw {
                     status: 0,
                     message: 'Network error. Please check your connection.',
@@ -229,12 +256,20 @@ const AuthAPI = {
     },
 
     /**
-     * Logout user
+     * Logout user — clears HttpOnly cookie on server, then clears localStorage.
      */
-    logout() {
+    async logout() {
+        try {
+            // Tell the server to clear the HttpOnly refreshToken cookie
+            await fetch(`${api.baseURL.replace('/api', '')}/api/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (e) {
+            // Fire and forget — proceed with local cleanup regardless
+        }
         TokenManager.removeToken();
         UserManager.removeUser();
-        // Relative redirect works with both localhost:5000 and Live Server
         const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
         window.location.href = loginPath;
     },
