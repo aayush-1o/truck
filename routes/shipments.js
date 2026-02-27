@@ -379,4 +379,88 @@ router.delete('/:id',
     }
 );
 
+
+// @route   PATCH /api/shipments/:id/assign
+// @desc    Admin assigns a driver to a shipment
+// @access  Private (Admin only)
+router.patch('/:id/assign',
+    protect,
+    authorize('admin'),
+    validateObjectId('id'),
+    handleValidationErrors,
+    async (req, res) => {
+        try {
+            const { driverId } = req.body;
+
+            if (!driverId) {
+                return res.status(400).json({ success: false, message: 'Driver ID is required' });
+            }
+
+            const Driver = require('../models/Driver');
+            const User = require('../models/User');
+            const Notification = require('../models/Notification');
+
+            const shipment = await Shipment.findById(req.params.id);
+            if (!shipment) {
+                return res.status(404).json({ success: false, message: 'Shipment not found' });
+            }
+
+            const driver = await Driver.findById(driverId).populate('user', 'name email');
+            if (!driver) {
+                return res.status(404).json({ success: false, message: 'Driver not found' });
+            }
+
+            // Assign driver and update status
+            shipment.driver = driverId;
+            shipment.status = 'assigned';
+            shipment.statusHistory = shipment.statusHistory || [];
+            shipment.statusHistory.push({
+                status: 'assigned',
+                timestamp: new Date(),
+                note: `Assigned to driver: ${driver.user?.name || 'Unknown'}`
+            });
+            await shipment.save();
+
+            // Notify the driver user
+            if (driver.user) {
+                await Notification.notify(
+                    driver.user._id || driver.user,
+                    '🚛 New Shipment Assigned',
+                    `You have been assigned to shipment ${shipment.trackingId}. Check your dashboard.`,
+                    'info',
+                    shipment._id
+                );
+            }
+
+            // Notify the shipper
+            if (shipment.shipper) {
+                await Notification.notify(
+                    shipment.shipper,
+                    '✅ Driver Assigned',
+                    `A driver has been assigned to your shipment ${shipment.trackingId}.`,
+                    'success',
+                    shipment._id
+                );
+            }
+
+            const updated = await Shipment.findById(req.params.id)
+                .populate('shipper', 'name email')
+                .populate({ path: 'driver', populate: { path: 'user', select: 'name email' } });
+
+            res.json({
+                success: true,
+                message: 'Driver assigned successfully',
+                data: updated
+            });
+        } catch (error) {
+            console.error('Assign driver error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to assign driver',
+                error: error.message
+            });
+        }
+    }
+);
+
 module.exports = router;

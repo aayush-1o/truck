@@ -24,7 +24,7 @@ FreightFlow is a role-based freight management platform:
 |-------|--------|-------------|
 | Phase 1 | ✅ Complete | Backend APIs, Authentication, Database Models |
 | Phase 2 | ✅ Complete | Frontend-Backend Integration, Real Dashboards |
-| Phase 3 | 🔜 Planned | Payments, Real-time Tracking, Notifications |
+| Phase 3 | ✅ Complete | Payments (Razorpay), Real-time Tracking, Notifications |
 
 ---
 

@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require("bcryptjs");
@@ -16,8 +18,42 @@ const { generateToken } = require('./middleware/auth');
 const shipmentRoutes = require('./routes/shipments');
 const userRoutes = require('./routes/users');
 const driverRoutes = require('./routes/drivers');
+const paymentRoutes = require('./routes/payments');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// Socket.io — Real-time driver location broadcasts
+const io = new Server(httpServer, {
+    cors: { origin: '*', methods: ['GET', 'POST'] }
+});
+
+// Make io accessible to routes
+app.set('io', io);
+
+io.on('connection', (socket) => {
+    // Driver joins a room with their userId so admins can track
+    socket.on('join', (userId) => {
+        socket.join(userId);
+    });
+
+    // Driver emits location update
+    socket.on('location:update', (data) => {
+        // data: { driverId, lat, lng, shipmentId }
+        // Broadcast to admin room
+        io.to('admin-room').emit('driver:location', data);
+    });
+
+    // Admin joins admin room
+    socket.on('join:admin', () => {
+        socket.join('admin-room');
+    });
+
+    socket.on('disconnect', () => {
+        // cleanup handled by socket.io automatically
+    });
+});
 
 // Middleware
 app.use(cors());
@@ -294,6 +330,8 @@ app.post('/api/reset-password', async (req, res) => {
 app.use('/api/shipments', shipmentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/drivers', driverRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ===============================
 // HEALTH CHECK
@@ -323,9 +361,15 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ===============================
 connectDB().then(() => {
-    app.listen(port, () =>
-        console.log(`🚀 Server running: http://localhost:${port}`)
-    );
+    httpServer.listen(port, () => {
+        console.log(`🚀 Server running: http://localhost:${port}`);
+        console.log(`🔌 Socket.io ready for real-time events`);
+        if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'rzp_test_YOUR_KEY_ID') {
+            console.log(`⚠️  Razorpay not configured — add RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET to .env to enable payments`);
+        } else {
+            console.log(`💳 Razorpay payment gateway active`);
+        }
+    });
 });
 
 // Handle graceful shutdown

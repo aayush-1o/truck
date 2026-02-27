@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Shipment - FreightFlow</title>
+    <meta name="description" content="Track your FreightFlow shipment in real time using your tracking ID.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', secondary: '#475569',
+                        accent: '#0ea5e9', dark: '#1e293b', light: '#f8fafc'
+                    },
+                    fontFamily: { sans: ['Poppins', 'Inter', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="font-sans bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 min-h-screen">
+
+    <!-- Nav -->
+    <nav class="bg-white/10 backdrop-blur border-b border-white/10 px-6 py-4">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-2 text-white">
+                <i data-lucide="truck" class="w-7 h-7 text-blue-400"></i>
+                <span class="text-xl font-bold">FreightFlow</span>
+            </a>
+            <div class="flex gap-4">
+                <a href="quote.html" class="text-blue-200 hover:text-white text-sm transition-colors">Get a Quote</a>
+                <a href="login.html"
+                    class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-500 transition-colors">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Search -->
+    <div class="max-w-3xl mx-auto pt-16 px-6">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-3">Track Your Shipment</h1>
+            <p class="text-blue-200 text-lg">Enter your tracking ID to get real-time updates</p>
+        </div>
+
+        <!-- Search Form -->
+        <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 mb-8">
+            <form id="track-form" class="flex gap-3">
+                <input id="tracking-input" type="text" placeholder="e.g. FF-2024-ABCD1234"
+                    class="flex-1 px-4 py-3 bg-white/10 text-white placeholder-blue-200 border border-white/20 rounded-xl focus:outline-none focus:border-blue-400 text-sm" />
+                <button type="submit"
+                    class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition-colors flex items-center gap-2 text-sm whitespace-nowrap">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                    Track Now
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Area -->
+        <div id="track-result" class="hidden">
+
+            <!-- Shipment Info Card -->
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden mb-6">
+                <div class="p-6 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm mb-1">Tracking ID</p>
+                            <h2 id="result-tracking-id" class="text-2xl font-bold font-mono"></h2>
+                        </div>
+                        <div id="result-status-badge"
+                            class="px-4 py-2 bg-white/20 rounded-full text-sm font-semibold capitalize"></div>
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- From / To -->
+                    <div>
+                        <div class="flex items-start gap-3 mb-4">
+                            <div
+                                class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-secondary font-medium uppercase tracking-wide">Pickup</p>
+                                <p id="result-pickup" class="font-semibold text-dark">—</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="flag" class="w-4 h-4 text-red-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-secondary font-medium uppercase tracking-wide">Delivery</p>
+                                <p id="result-delivery" class="font-semibold text-dark">—</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cargo Info -->
+                    <div class="bg-slate-50 rounded-xl p-4">
+                        <p class="text-xs text-secondary font-medium uppercase tracking-wide mb-3">Cargo Details</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-secondary">Weight</span>
+                                <span id="result-weight" class="font-semibold text-dark">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-secondary">Vehicle</span>
+                                <span id="result-vehicle" class="font-semibold text-dark">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-secondary">Est. Price</span>
+                                <span id="result-price" class="font-semibold text-primary">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Driver Info (if assigned) -->
+                <div id="driver-info" class="hidden px-6 pb-6">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg"
+                            id="driver-avatar">D</div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Assigned Driver</p>
+                            <p id="driver-name" class="font-bold text-dark">—</p>
+                            <p id="driver-vehicle" class="text-sm text-secondary">—</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="bg-white rounded-2xl shadow-2xl p-6 mb-6">
+                <h3 class="text-lg font-bold text-dark mb-6">Shipment Timeline</h3>
+                <div id="timeline" class="space-y-0">
+                    <!-- Built by tracking.js -->
+                </div>
+            </div>
+
+            <!-- Auto-refresh indicator -->
+            <div class="text-center text-blue-200 text-xs mb-8">
+                <i data-lucide="refresh-cw" class="w-3 h-3 inline mr-1"></i>
+                Auto-refreshes every 30 seconds
+            </div>
+        </div>
+
+        <!-- Error area -->
+        <div id="track-error" class="hidden">
+            <div class="bg-red-500/20 border border-red-400/30 text-red-200 rounded-xl p-6 text-center">
+                <i data-lucide="alert-circle" class="w-10 h-10 mx-auto mb-3 text-red-400"></i>
+                <p id="error-message" class="font-semibold text-lg mb-1">Shipment not found</p>
+                <p class="text-sm text-red-300">Check your tracking ID and try again.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center py-10 text-blue-200/60 text-sm">
+        © 2024 FreightFlow. All rights reserved.
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
+    <script src="../assets/js/api-client.js"></script>
+    <script src="../assets/js/tracking.js"></script>
+</body>
+
+</html>

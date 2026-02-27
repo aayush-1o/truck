@@ -5,7 +5,7 @@
 
 // API Configuration
 const API_CONFIG = {
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'http://localhost:3000/api',
     timeout: 30000,
     headers: {
         'Content-Type': 'application/json'
@@ -497,14 +497,18 @@ const UIHelpers = {
 
 // Auth Guard - Protect pages that require authentication
 function initAuthGuard() {
-    const publicPages = ['/index.html', '/pages/login.html', '/pages/register.html', '/pages/forgot-password.html'];
+    const publicPages = [
+        '/index.html', '/pages/login.html', '/pages/register.html',
+        '/pages/forgot-password.html', '/pages/tracking.html', '/pages/quote.html'
+    ];
     const currentPath = window.location.pathname;
 
     // Check if current page requires authentication
     const isPublicPage = publicPages.some(page => currentPath.endsWith(page) || currentPath === '/');
 
     if (!isPublicPage && !AuthAPI.isAuthenticated()) {
-        window.location.href = '/pages/login.html';
+        const loginPath = window.location.pathname.includes('/pages/') ? 'login.html' : '/pages/login.html';
+        window.location.href = loginPath;
         return;
     }
 
@@ -531,12 +535,47 @@ if (document.readyState === 'loading') {
     initAuthGuard();
 }
 
+// ==============================
+// Payment API
+// ==============================
+const PaymentAPI = {
+    async createOrder(shipmentId) {
+        return await api.post('/payments/order', { shipmentId });
+    },
+    async verify(data) {
+        return await api.post('/payments/verify', data);
+    },
+    async getHistory() {
+        return await api.get('/payments/history');
+    }
+};
+
+// ==============================
+// Notification API
+// ==============================
+const NotificationAPI = {
+    async getAll() {
+        return await api.get('/notifications');
+    },
+    async markRead(id) {
+        return await api.patch(`/notifications/${id}/read`);
+    },
+    async markAllRead() {
+        return await api.patch('/notifications/read-all');
+    },
+    async delete(id) {
+        return await api.delete(`/notifications/${id}`);
+    }
+};
+
 // Export for use in other scripts
 window.API = {
     auth: AuthAPI,
     shipments: ShipmentAPI,
     users: UserAPI,
     drivers: DriverAPI,
+    payments: PaymentAPI,
+    notifications: NotificationAPI,
     ui: UIHelpers,
     tokenManager: TokenManager,
     userManager: UserManager
