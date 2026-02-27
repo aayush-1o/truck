@@ -60,24 +60,16 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-    // Only hash if password is modified
-    if (!this.isModified('password')) {
-        return next();
-    }
-    
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
+// Hash password before saving (Mongoose 7+ async style - no next() needed)
+userSchema.pre('save', async function () {
+    if (!this.isModified('password')) return;
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
+
 // Method to compare passwords
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
     try {
         return await bcrypt.compare(candidatePassword, this.password);
     } catch (error) {
@@ -86,7 +78,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // Method to get public profile (without sensitive data)
-userSchema.methods.toPublicJSON = function() {
+userSchema.methods.toPublicJSON = function () {
     return {
         id: this._id,
         name: this.name,
