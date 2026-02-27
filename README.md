@@ -2,7 +2,8 @@
 
 > A full-stack logistics platform for shippers, drivers, and admins — built with **Node.js**, **Express**, **MongoDB**, and **Vanilla JS**.
 
-[![Phase](https://img.shields.io/badge/Phase-2%20Complete-brightgreen)](https://github.com/aayush-1o/truck)
+[![Phase](https://img.shields.io/badge/Phase-4%20Complete-brightgreen)](https://github.com/aayush-1o/truck)
+[![Live](https://img.shields.io/badge/Live-truck--production.up.railway.app-blue)](https://truck-production.up.railway.app)
 [![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20Express%20%7C%20MongoDB-blue)](https://github.com/aayush-1o/truck)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
@@ -25,6 +26,9 @@ FreightFlow is a role-based freight management platform:
 | Phase 1 | ✅ Complete | Backend APIs, Authentication, Database Models |
 | Phase 2 | ✅ Complete | Frontend-Backend Integration, Real Dashboards |
 | Phase 3 | ✅ Complete | Payments (Razorpay), Real-time Tracking, Notifications |
+| Phase 4 | ✅ Complete | Analytics Charts, Live Map, Rating System, Dark Mode, Email Alerts |
+
+🌐 **Live Demo:** https://truck-production.up.railway.app
 
 ---
 
@@ -36,7 +40,12 @@ FreightFlow is a role-based freight management platform:
 | **Database** | MongoDB + Mongoose |
 | **Auth** | JWT, bcryptjs |
 | **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
-| **Email** | Nodemailer (optional) |
+| **Real-time** | Socket.io |
+| **Maps** | Leaflet.js (OpenStreetMap) |
+| **Charts** | Chart.js |
+| **Payments** | Razorpay (test mode) |
+| **Email** | Nodemailer |
+| **Hosting** | Railway (backend) + MongoDB Atlas (DB) |
 | **Icons** | Lucide Icons |
 
 ---

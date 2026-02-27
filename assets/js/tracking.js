@@ -14,6 +14,7 @@ const STATUS_CONFIG = {
 
 let refreshInterval = null;
 let currentTrackingId = null;
+let leafletMap = null;
 
 async function trackShipment(trackingId) {
     if (!trackingId) return;
@@ -50,25 +51,21 @@ function renderResult(shipment) {
     const status = shipment.status || 'pending';
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG['pending'];
 
-    // Header
     document.getElementById('result-tracking-id').textContent = shipment.trackingId || '—';
     const badge = document.getElementById('result-status-badge');
     badge.textContent = cfg.label;
 
-    // Locations
     const pickup = shipment.pickupLocation?.address || shipment.pickupLocation || '—';
     const delivery = shipment.deliveryLocation?.address || shipment.deliveryLocation || '—';
     document.getElementById('result-pickup').textContent = pickup;
     document.getElementById('result-delivery').textContent = delivery;
 
-    // Cargo
     const weight = shipment.cargo?.weight || shipment.weight;
     document.getElementById('result-weight').textContent = weight ? `${weight} kg` : '—';
     document.getElementById('result-vehicle').textContent = shipment.cargo?.vehicleType || shipment.vehicleType || '—';
     const price = shipment.pricing?.totalPrice || shipment.price;
     document.getElementById('result-price').textContent = price ? `₹${price.toLocaleString('en-IN')}` : '—';
 
-    // Driver info
     const driverCard = document.getElementById('driver-info');
     if (shipment.driver) {
         const driverUser = shipment.driver.user || shipment.driver;
@@ -82,10 +79,9 @@ function renderResult(shipment) {
         driverCard.classList.add('hidden');
     }
 
-    // Timeline
     renderTimeline(shipment);
+    renderMap(shipment);
 
-    // Re-init lucide icons
     if (window.lucide) lucide.createIcons();
 }
 
@@ -96,11 +92,8 @@ function renderTimeline(shipment) {
     const STEPS = ['pending', 'assigned', 'picked-up', 'in-transit', 'delivered'];
     const currentIdx = STEPS.indexOf(shipment.status);
 
-    // Build history map
     const historyMap = {};
-    (shipment.statusHistory || []).forEach(h => {
-        historyMap[h.status] = h;
-    });
+    (shipment.statusHistory || []).forEach(h => { historyMap[h.status] = h; });
 
     STEPS.forEach((step, idx) => {
         const cfg = STATUS_CONFIG[step];
@@ -133,6 +126,68 @@ function renderTimeline(shipment) {
     });
 
     if (window.lucide) lucide.createIcons();
+}
+
+// --- Leaflet Map ---
+function renderMap(shipment) {
+    if (typeof L === 'undefined') return;
+    const mapEl = document.getElementById('tracking-map');
+    if (!mapEl) return;
+
+    const CITY_COORDS = {
+        'mumbai': [19.0760, 72.8777], 'delhi': [28.7041, 77.1025],
+        'bangalore': [12.9716, 77.5946], 'bengaluru': [12.9716, 77.5946],
+        'chennai': [13.0827, 80.2707], 'kolkata': [22.5726, 88.3639],
+        'hyderabad': [17.3850, 78.4867], 'pune': [18.5204, 73.8567],
+        'ahmedabad': [23.0225, 72.5714], 'jaipur': [26.9124, 75.7873],
+        'surat': [21.1702, 72.8311], 'lucknow': [26.8467, 80.9462],
+        'chandigarh': [30.7333, 76.7794], 'bhopal': [23.2599, 77.4126],
+        'nagpur': [21.1458, 79.0882], 'indore': [22.7196, 75.8577],
+        'patna': [25.5941, 85.1376], 'agra': [27.1767, 78.0081]
+    };
+
+    function getCoords(location) {
+        if (!location) return null;
+        if (location.coordinates?.lat && location.coordinates?.lng)
+            return [location.coordinates.lat, location.coordinates.lng];
+        const city = (location.city || location.address || '').toLowerCase();
+        for (const [key, coords] of Object.entries(CITY_COORDS)) {
+            if (city.includes(key)) return coords;
+        }
+        return null;
+    }
+
+    const pickupCoords = getCoords(shipment.pickupLocation);
+    const deliveryCoords = getCoords(shipment.deliveryLocation);
+
+    if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+
+    const center = pickupCoords || deliveryCoords || [20.5937, 78.9629];
+    leafletMap = L.map('tracking-map').setView(center, 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(leafletMap);
+
+    const greenIcon = L.divIcon({ html: '📦', className: '', iconSize: [24, 24] });
+    const redIcon = L.divIcon({ html: '🏁', className: '', iconSize: [24, 24] });
+    const truckIcon = L.divIcon({ html: '🚛', className: '', iconSize: [24, 24] });
+
+    if (pickupCoords) L.marker(pickupCoords, { icon: greenIcon }).addTo(leafletMap)
+        .bindPopup('📦 Pickup: ' + (shipment.pickupLocation?.address || 'Pickup'));
+    if (deliveryCoords) L.marker(deliveryCoords, { icon: redIcon }).addTo(leafletMap)
+        .bindPopup('🏁 Delivery: ' + (shipment.deliveryLocation?.address || 'Delivery'));
+
+    const driverCoords = shipment.driver?.currentLocation?.coordinates;
+    if (driverCoords?.lat && driverCoords?.lng) {
+        L.marker([driverCoords.lat, driverCoords.lng], { icon: truckIcon })
+            .addTo(leafletMap).bindPopup('🚛 Driver Location');
+    }
+
+    if (pickupCoords && deliveryCoords) {
+        L.polyline([pickupCoords, deliveryCoords], { color: '#2563eb', dashArray: '8,6', weight: 3 }).addTo(leafletMap);
+        leafletMap.fitBounds([pickupCoords, deliveryCoords], { padding: [40, 40] });
+    }
 }
 
 // Form submission

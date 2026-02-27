@@ -139,6 +139,9 @@
                     <!-- Notifications -->
                     <div id="notification-bell-container"></div>
 
+                    <!-- Dark Mode Toggle -->
+                    <div id="theme-toggle-container"></div>
+
                     <!-- User Menu -->
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-semibold"
@@ -252,6 +255,28 @@
                 </div>
             </div>
 
+            <!-- Analytics Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-base font-semibold text-dark mb-4 flex items-center gap-2">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
+                        Revenue (Last 7 Days)
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="revenue-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-base font-semibold text-dark mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-purple-600"></i>
+                        Shipment Status Breakdown
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="status-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <!-- Assign Driver: Shipments Table -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-dark mb-4">Shipments — Assign Drivers</h2>
@@ -291,15 +316,19 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <!-- API Client (must load first) -->
     <script src="../assets/js/api-client.js"></script>
 
     <!-- Phase 3 Scripts -->
     <script src="../assets/js/notifications.js"></script>
+
+    <!-- Theme -->
+    <script src="../assets/js/theme.js"></script>
 
     <!-- Admin Dashboard Script -->
     <script src="../assets/js/admin-dashboard.js"></script>

@@ -152,6 +152,7 @@ async function loadShipments() {
 
         renderActivityLog(shipments);
         renderShipmentsTable(shipments, drivers);
+        renderCharts(shipments);
     } catch (e) {
         console.error('Load shipments error:', e);
     }
@@ -302,3 +303,77 @@ function getTimeAgo(dateStr) {
 }
 
 window.assignDriver = assignDriver;
+
+// ── Chart.js Analytics ────────────────────────────────────────────
+let revenueChart = null;
+let statusChart = null;
+
+function renderCharts(shipments) {
+    if (typeof Chart === 'undefined') return;
+
+    // --- Revenue trend (last 7 days) ---
+    const revenueCanvas = document.getElementById('revenue-chart');
+    if (revenueCanvas) {
+        const days = [...Array(7)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            return d;
+        });
+        const labels = days.map(d => d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }));
+        const dayRevenue = days.map(day => {
+            const dayStr = day.toDateString();
+            return (shipments || [])
+                .filter(s => s.status === 'delivered' && new Date(s.updatedAt || s.createdAt).toDateString() === dayStr)
+                .reduce((sum, s) => sum + (s.pricing?.totalPrice || 0), 0);
+        });
+
+        if (revenueChart) revenueChart.destroy();
+        revenueChart = new Chart(revenueCanvas, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: dayRevenue,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.08)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2563eb',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: v => '₹' + v.toLocaleString('en-IN') } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // --- Status donut chart ---
+    const statusCanvas = document.getElementById('status-chart');
+    if (statusCanvas) {
+        const statuses = ['pending', 'assigned', 'picked-up', 'in-transit', 'delivered', 'cancelled'];
+        const colors = ['#f59e0b', '#3b82f6', '#f97316', '#8b5cf6', '#16a34a', '#ef4444'];
+        const counts = statuses.map(s => (shipments || []).filter(sh => sh.status === s).length);
+
+        if (statusChart) statusChart.destroy();
+        statusChart = new Chart(statusCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: statuses.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+                datasets: [{ data: counts, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } },
+                cutout: '65%'
+            }
+        });
+    }
+}
+

@@ -4,6 +4,7 @@ const Shipment = require('../models/Shipment');
 const Driver = require('../models/Driver');
 const { protect, authorize } = require('../middleware/auth');
 const { validateObjectId, handleValidationErrors } = require('../middleware/validator');
+const { sendShipmentAssigned, sendShipmentDelivered } = require('../utils/email');
 
 // ===============================================================
 // IMPORTANT: /track/:trackingId MUST come BEFORE /:id
@@ -443,6 +444,18 @@ router.patch('/:id/assign',
                 );
             }
 
+            // Send email to driver
+            if (driver.user?.email) {
+                const shipperDoc = await User.findById(shipment.shipper).select('email name');
+                sendShipmentAssigned({
+                    driverEmail: driver.user.email,
+                    driverName: driver.user.name,
+                    trackingId: shipment.trackingId,
+                    pickup: shipment.pickupLocation?.address || 'N/A',
+                    delivery: shipment.deliveryLocation?.address || 'N/A'
+                }).catch(() => { });
+            }
+
             const updated = await Shipment.findById(req.params.id)
                 .populate('shipper', 'name email')
                 .populate({ path: 'driver', populate: { path: 'user', select: 'name email' } });
@@ -459,6 +472,59 @@ router.patch('/:id/assign',
                 message: 'Failed to assign driver',
                 error: error.message
             });
+        }
+    }
+);
+
+module.exports = router;
+
+// @route   POST /api/shipments/:id/rate
+// @desc    Shipper rates a driver after delivery
+// @access  Private (Shipper only)
+router.post('/:id/rate',
+    protect,
+    authorize('shipper'),
+    validateObjectId('id'),
+    handleValidationErrors,
+    async (req, res) => {
+        try {
+            const { stars, review } = req.body;
+            if (!stars || stars < 1 || stars > 5) {
+                return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
+            }
+
+            const shipment = await Shipment.findById(req.params.id);
+            if (!shipment) return res.status(404).json({ success: false, message: 'Shipment not found' });
+            if (shipment.shipper.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ success: false, message: 'Not your shipment' });
+            }
+            if (shipment.status !== 'delivered') {
+                return res.status(400).json({ success: false, message: 'Can only rate delivered shipments' });
+            }
+            if (shipment.rating?.stars) {
+                return res.status(400).json({ success: false, message: 'Already rated' });
+            }
+
+            // Save rating on shipment
+            shipment.rating = { stars: parseInt(stars), review: review || '', ratedAt: new Date() };
+            await shipment.save();
+
+            // Update driver's average rating
+            if (shipment.driver) {
+                const Driver = require('../models/Driver');
+                const driver = await Driver.findById(shipment.driver);
+                if (driver) {
+                    const oldTotal = driver.rating.average * driver.rating.count;
+                    driver.rating.count += 1;
+                    driver.rating.average = Math.round(((oldTotal + parseInt(stars)) / driver.rating.count) * 10) / 10;
+                    await driver.save();
+                }
+            }
+
+            res.json({ success: true, message: 'Rating submitted!', data: shipment.rating });
+        } catch (error) {
+            console.error('Rate shipment error:', error);
+            res.status(500).json({ success: false, message: 'Failed to submit rating', error: error.message });
         }
     }
 );
