@@ -476,8 +476,6 @@ router.patch('/:id/assign',
     }
 );
 
-module.exports = router;
-
 // @route   POST /api/shipments/:id/rate
 // @desc    Shipper rates a driver after delivery
 // @access  Private (Shipper only)

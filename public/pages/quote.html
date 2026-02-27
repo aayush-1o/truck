@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freight Quote Calculator - FreightFlow</title>
+    <meta name="description"
+        content="Get an instant freight quote. Calculate your shipping cost based on route, weight, and vehicle type.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', secondary: '#475569',
+                        accent: '#0ea5e9', dark: '#1e293b', light: '#f8fafc'
+                    },
+                    fontFamily: { sans: ['Poppins', 'Inter', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="font-sans bg-light">
+
+    <!-- Nav -->
+    <nav class="bg-white border-b shadow-sm px-6 py-4">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-2">
+                <i data-lucide="truck" class="w-7 h-7 text-primary"></i>
+                <span class="text-xl font-bold text-dark">FreightFlow</span>
+            </a>
+            <div class="flex gap-4">
+                <a href="tracking.html" class="text-secondary hover:text-primary text-sm transition-colors">Track
+                    Shipment</a>
+                <a href="register.html"
+                    class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-accent transition-colors">Get
+                    Started Free</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-6 py-14">
+
+        <div class="text-center mb-12">
+            <span class="inline-block px-4 py-1 bg-blue-100 text-primary rounded-full text-sm font-semibold mb-4">Free
+                Instant Quote</span>
+            <h1 class="text-4xl md:text-5xl font-bold text-dark mb-4">How much will it cost?</h1>
+            <p class="text-secondary text-lg">Fill in the details and get a real-time freight estimate in seconds.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <!-- Calculator Form -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-xl font-bold text-dark mb-6">Shipment Details</h2>
+                <form id="quote-form" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-dark mb-1">Pickup City <span
+                                class="text-red-500">*</span></label>
+                        <input id="q-pickup" type="text" required placeholder="e.g. Mumbai"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none text-sm transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-dark mb-1">Delivery City <span
+                                class="text-red-500">*</span></label>
+                        <input id="q-delivery" type="text" required placeholder="e.g. Delhi"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none text-sm transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-dark mb-2">Cargo Weight</label>
+                        <div class="flex items-center gap-3">
+                            <input id="q-weight" type="range" min="100" max="20000" step="100" value="1000"
+                                class="flex-1 accent-primary">
+                            <span id="weight-display" class="text-primary font-bold text-lg w-24 text-right">1,000
+                                kg</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-dark mb-2">Vehicle Type</label>
+                        <div class="grid grid-cols-2 gap-2" id="vehicle-options">
+                            <label
+                                class="vehicle-option border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-primary transition-colors">
+                                <input type="radio" name="vehicle" value="Mini Truck (7ft)" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="truck" class="w-6 h-6 mx-auto mb-1 text-secondary"></i>
+                                    <p class="text-xs font-semibold">Mini Truck</p>
+                                    <p class="text-xs text-secondary">Up to 3 tons</p>
+                                </div>
+                            </label>
+                            <label
+                                class="vehicle-option border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-primary transition-colors">
+                                <input type="radio" name="vehicle" value="Standard Truck (14ft)" class="sr-only"
+                                    checked>
+                                <div class="text-center">
+                                    <i data-lucide="truck" class="w-7 h-7 mx-auto mb-1 text-secondary"></i>
+                                    <p class="text-xs font-semibold">Standard Truck</p>
+                                    <p class="text-xs text-secondary">Up to 7 tons</p>
+                                </div>
+                            </label>
+                            <label
+                                class="vehicle-option border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-primary transition-colors">
+                                <input type="radio" name="vehicle" value="Large Truck (19ft)" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="truck" class="w-8 h-8 mx-auto mb-1 text-secondary"></i>
+                                    <p class="text-xs font-semibold">Large Truck</p>
+                                    <p class="text-xs text-secondary">Up to 12 tons</p>
+                                </div>
+                            </label>
+                            <label
+                                class="vehicle-option border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-primary transition-colors">
+                                <input type="radio" name="vehicle" value="Refrigerated" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="snowflake" class="w-6 h-6 mx-auto mb-1 text-blue-500"></i>
+                                    <p class="text-xs font-semibold">Refrigerated</p>
+                                    <p class="text-xs text-secondary">Cold chain</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quote Result -->
+            <div class="flex flex-col gap-6">
+
+                <!-- Price Card -->
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-xl p-8">
+                    <p class="text-blue-200 text-sm font-semibold uppercase tracking-wide mb-2">Estimated Cost</p>
+                    <div class="flex items-end gap-2 mb-1">
+                        <span class="text-4xl font-bold" id="quote-price">₹ —</span>
+                    </div>
+                    <p class="text-blue-200 text-xs" id="quote-note">Fill in pickup & delivery to get a quote</p>
+
+                    <div class="mt-6 pt-6 border-t border-white/20 space-y-2 text-sm text-blue-100">
+                        <div class="flex justify-between">
+                            <span>Base fare</span>
+                            <span id="q-base">₹—</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Weight charge</span>
+                            <span id="q-weight-charge">₹—</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Vehicle surcharge</span>
+                            <span id="q-vehicle-charge">₹—</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-white border-t border-white/20 pt-2 mt-2">
+                            <span>Total</span>
+                            <span id="q-total">₹—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breakdown Info -->
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="font-bold text-dark mb-4">What's included?</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center gap-3 text-secondary">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 flex-shrink-0"></i>
+                            Door-to-door freight service
+                        </li>
+                        <li class="flex items-center gap-3 text-secondary">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 flex-shrink-0"></i>
+                            Real-time shipment tracking
+                        </li>
+                        <li class="flex items-center gap-3 text-secondary">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 flex-shrink-0"></i>
+                            Dedicated driver assignment
+                        </li>
+                        <li class="flex items-center gap-3 text-secondary">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 flex-shrink-0"></i>
+                            Online payment (Razorpay secured)
+                        </li>
+                    </ul>
+
+                    <div class="mt-6 space-y-3">
+                        <a href="register.html" id="book-now-btn"
+                            class="block w-full py-3 bg-primary text-white rounded-xl font-bold text-center hover:bg-accent transition-colors">
+                            Book Now →
+                        </a>
+                        <a href="tracking.html"
+                            class="block w-full py-3 border-2 border-gray-200 text-secondary rounded-xl font-semibold text-center hover:bg-light transition-colors text-sm">
+                            Track Existing Shipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info strip -->
+        <div class="mt-12 grid grid-cols-3 gap-6 text-center">
+            <div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="zap" class="w-6 h-6 text-primary"></i>
+                </div>
+                <p class="font-semibold text-dark text-sm">Instant Quotes</p>
+                <p class="text-secondary text-xs">No waiting, no calls</p>
+            </div>
+            <div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-green-600"></i>
+                </div>
+                <p class="font-semibold text-dark text-sm">Secure Payments</p>
+                <p class="text-secondary text-xs">Razorpay protected</p>
+            </div>
+            <div>
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="map-pin" class="w-6 h-6 text-purple-600"></i>
+                </div>
+                <p class="font-semibold text-dark text-sm">Live Tracking</p>
+                <p class="text-secondary text-xs">Know where your cargo is</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
+    <script src="../assets/js/quote.js"></script>
+</body>
+
+</html>

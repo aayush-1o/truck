@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - FreightFlow</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Animations -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css" />
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2563eb",
+                        secondary: "#475569",
+                        accent: "#0ea5e9",
+                        dark: "#1e293b",
+                        light: "#f8fafc"
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "Inter", "Roboto", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="font-sans bg-gradient-to-br from-light to-blue-50">
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="max-w-md w-full">
+
+            <!-- Logo -->
+            <div class="text-center mb-8" data-aos="fade-down">
+                <a href="../index.html" class="inline-flex items-center space-x-2">
+                    <i data-lucide="truck" class="w-12 h-12 text-primary"></i>
+                    <span class="text-3xl font-bold text-dark">Freight<span class="text-primary">Flow</span></span>
+                </a>
+                <h2 class="text-3xl font-bold text-dark mt-4">Welcome Back!</h2>
+                <p class="text-secondary mt-2">Sign in to access your dashboard</p>
+            </div>
+
+            <!-- Login Box -->
+            <div class="bg-white rounded-2xl shadow-xl p-8" data-aos="fade-up">
+                <form id="login-form">
+
+                    <label class="block mb-2 font-semibold text-dark">Email</label>
+                    <input id="login-email" type="email" required
+                        class="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                        placeholder="you@example.com" />
+
+                    <label class="block mb-2 font-semibold text-dark">Password</label>
+                    <input id="login-password" type="password" required
+                        class="w-full mb-2 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                        placeholder="••••••••" />
+
+                    <div class="text-right mb-4">
+                        <a href="forgot-password.html" class="text-sm text-primary hover:underline">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" id="login-btn"
+                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
+                        Sign In
+                    </button>
+
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-secondary">
+                        Don't have an account?
+                        <a href="register.html" class="text-primary font-semibold hover:underline">Sign up</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <a href="../index.html" class="text-sm text-secondary hover:text-primary">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
+
+    <!-- AOS -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>AOS.init();</script>
+
+    <!-- API Client -->
+    <script src="../assets/js/api-client.js"></script>
+
+    <!-- Login Logic -->
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+            const loginBtn = document.getElementById("login-btn");
+
+            // Show loading state
+            window.API.ui.showLoading(loginBtn, 'Signing in...');
+
+            try {
+                const response = await window.API.auth.login({ email, password });
+
+                if (response.success) {
+                    window.API.ui.showSuccess('Login successful! Redirecting...');
+
+                    // Redirect based on role
+                    const roleDashboards = {
+                        admin: 'admin-dashboard.html',
+                        shipper: 'shipper-dashboard.html',
+                        driver: 'driver-dashboard.html'
+                    };
+
+                    setTimeout(() => {
+                        window.location.href = roleDashboards[response.user.role] || 'shipper-dashboard.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                window.API.ui.handleError(error, 'Login failed. Please check your credentials.');
+                window.API.ui.hideLoading(loginBtn);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

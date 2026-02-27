@@ -1,11 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require("bcryptjs");
-const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Import models
@@ -13,6 +14,10 @@ const User = require('./models/User');
 
 // Import middleware
 const { generateToken } = require('./middleware/auth');
+const { validateRegister, validateLogin, handleValidationErrors } = require('./middleware/validator');
+
+// Import utils
+const { sendEmail } = require('./utils/email');
 
 // Import routes
 const shipmentRoutes = require('./routes/shipments');
@@ -21,12 +26,48 @@ const driverRoutes = require('./routes/drivers');
 const paymentRoutes = require('./routes/payments');
 const notificationRoutes = require('./routes/notifications');
 
+// ===============================
+// FAIL-FAST: Validate critical env vars before anything else
+// ===============================
+const requiredEnv = ['MONGODB_URI', 'JWT_SECRET'];
+for (const key of requiredEnv) {
+    if (!process.env[key]) {
+        console.error(`❌ Missing required environment variable: ${key}`);
+        process.exit(1);
+    }
+}
+
+// ===============================
+// RATE LIMITERS
+// ===============================
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many attempts. Please try again in 15 minutes.' }
+});
+
+const forgotPasswordLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many reset requests. Please try again in 1 hour.' }
+});
+
 const app = express();
 const httpServer = http.createServer(app);
 
 // Socket.io — Real-time driver location broadcasts
 const io = new Server(httpServer, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: {
+        origin: process.env.CORS_ORIGIN
+            ? process.env.CORS_ORIGIN.split(',')
+            : ['http://localhost:5000', 'http://localhost:5500'],
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
 });
 
 // Make io accessible to routes
@@ -56,9 +97,15 @@ io.on('connection', (socket) => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',')
+        : ['http://localhost:5000', 'http://localhost:5500'],
+    credentials: true
+}));
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve static files (HTML, CSS, JS) from project root
+// Serve static files ONLY from /public — prevents .env, seed.js, etc. from being downloadable
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ENV
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/freightflow';
@@ -78,7 +125,7 @@ async function connectDB() {
 // ===============================
 // 1️⃣ USER REGISTRATION
 // ===============================
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', authLimiter, validateRegister, handleValidationErrors, async (req, res) => {
     try {
         const { name, email, phone, password, role } = req.body;
 
@@ -125,7 +172,7 @@ app.post('/api/register', async (req, res) => {
 // ===============================
 // 2️⃣ USER LOGIN
 // ===============================
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimiter, validateLogin, handleValidationErrors, async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -193,16 +240,17 @@ app.post('/api/login', async (req, res) => {
 // ===============================
 // 3️⃣ FORGOT PASSWORD — Send Email
 // ===============================
-app.post('/api/forgot-password', async (req, res) => {
+app.post('/api/forgot-password', forgotPasswordLimiter, async (req, res) => {
     try {
         const { email } = req.body;
 
         const user = await User.findOne({ email });
 
+        // Security: always return 200 — never reveal whether an email is registered
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "No account found with this email"
+            return res.json({
+                success: true,
+                message: "If an account exists with this email, a reset link has been sent."
             });
         }
 
@@ -214,32 +262,26 @@ app.post('/api/forgot-password', async (req, res) => {
         user.resetTokenExpires = expireTime;
         await user.save();
 
-        // Send email
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/pages/reset-password.html?token=${token}`;
 
-        const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/pages/reset-password.html?token=${token}`;
-
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER || "FreightFlow Support",
+        // Use the singleton transporter from utils/email.js
+        await sendEmail({
             to: email,
-            subject: "Reset Your Password",
+            subject: 'Reset Your Password — FreightFlow',
             html: `
-                <h2>Password Reset Request</h2>
-                <p>Click the link below to reset your password:</p>
-                <a href="${resetLink}">${resetLink}</a>
-                <p>This link is valid for 10 minutes.</p>
+                <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:24px;">
+                    <h2 style="color:#2563eb;">FreightFlow</h2>
+                    <h3>Password Reset Request</h3>
+                    <p>Click the link below to reset your password:</p>
+                    <a href="${resetLink}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;">Reset Password</a>
+                    <p style="color:#6b7280;font-size:13px;margin-top:16px;">This link expires in 10 minutes. If you didn't request a reset, ignore this email.</p>
+                </div>
             `
         });
 
         res.json({
             success: true,
-            message: "Password reset link sent to your email"
+            message: "If an account exists with this email, a reset link has been sent."
         });
 
     } catch (err) {

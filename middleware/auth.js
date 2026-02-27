@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Generate JWT token
+// Generate JWT token (access token)
 exports.generateToken = (userId, role) => {
     return jwt.sign(
         { id: userId, role },
-        process.env.JWT_SECRET || 'freightflow_secret_key_change_in_production',
+        process.env.JWT_SECRET, // No fallback — server.js enforces this is set
         { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 };
@@ -32,7 +32,7 @@ exports.protect = async (req, res, next) => {
             // Verify token
             const decoded = jwt.verify(
                 token,
-                process.env.JWT_SECRET || 'freightflow_secret_key_change_in_production'
+                process.env.JWT_SECRET // No fallback — server.js enforces this is set
             );
 
             // Get user from token

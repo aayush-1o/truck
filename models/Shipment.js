@@ -14,7 +14,7 @@ const shipmentSchema = new mongoose.Schema({
     },
     driver: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Driver',  // Fixed: stores Driver._id, not User._id
         default: null
     },
     pickupLocation: {
