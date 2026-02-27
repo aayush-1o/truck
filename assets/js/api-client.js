@@ -5,7 +5,7 @@
 
 // API Configuration
 const API_CONFIG = {
-    baseURL: 'http://localhost:3000/api',
+    baseURL: 'https://truck-production.up.railway.app/api',
     timeout: 30000,
     headers: {
         'Content-Type': 'application/json'

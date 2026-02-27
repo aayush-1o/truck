@@ -86,14 +86,14 @@ function initSocket(user) {
         // Only load socket.io if available
         if (typeof io === 'undefined') {
             const script = document.createElement('script');
-            script.src = 'http://localhost:5000/socket.io/socket.io.js';
+            script.src = 'https://truck-production.up.railway.app/socket.io/socket.io.js';
             script.onload = () => {
-                socket = io('http://localhost:5000');
+                socket = io('https://truck-production.up.railway.app');
                 socket.emit('join', user.id);
             };
             document.head.appendChild(script);
         } else {
-            socket = io('http://localhost:5000');
+            socket = io('https://truck-production.up.railway.app');
             socket.emit('join', user.id);
         }
     } catch (e) {

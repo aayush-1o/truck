@@ -26,7 +26,7 @@ async function trackShipment(trackingId) {
     errorEl.classList.add('hidden');
 
     try {
-        const response = await fetch(`http://localhost:3000/api/shipments/track/${currentTrackingId}`);
+        const response = await fetch(`https://truck-production.up.railway.app/api/shipments/track/${currentTrackingId}`);
         const data = await response.json();
 
         if (!response.ok || !data.success) {

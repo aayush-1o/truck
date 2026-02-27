@@ -270,7 +270,7 @@ function renderShipmentsTable(shipments, drivers) {
 async function assignDriver(shipmentId, driverId) {
     if (!driverId) return;
     try {
-        const res = await fetch(`http://localhost:3000/api/shipments/${shipmentId}/assign`, {
+        const res = await fetch(`https://truck-production.up.railway.app/api/shipments/${shipmentId}/assign`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
