@@ -1,0 +1,16 @@
+# docker-compose.override.yml
+# Automatically loaded by "docker-compose up" alongside docker-compose.yml.
+# Override settings specific to local development — NOT for production.
+#
+# In production (Railway), this file is never present, so the Dockerfile
+# CMD ["node", "server.js"] takes effect.
+
+version: '3.9'
+
+services:
+  app:
+    # Override the Dockerfile CMD to use nodemon for hot-reloading
+    # Changes to .js files restart the server automatically
+    command: [ "node_modules/.bin/nodemon", "server.js" ]
+    environment:
+      - NODE_ENV=development

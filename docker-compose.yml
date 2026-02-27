@@ -1,0 +1,59 @@
+# docker-compose.yml
+# Local development setup — runs the FreightFlow app + MongoDB together.
+# "docker-compose up" replaces needing a local MongoDB install.
+
+version: '3.9'
+
+services:
+  # ============================================================
+  # MongoDB — the database
+  # ============================================================
+  mongo:
+    image: mongo:7
+    container_name: freightflow_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      # Named volume persists data between docker-compose down/up cycles
+      # Use "docker-compose down -v" to wipe all data
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ============================================================
+  # App — the Express server
+  # ============================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: freightflow_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy # Wait for Mongo ping to succeed before starting
+    env_file:
+      - .env # Load your local .env file
+    environment:
+      # Override MONGODB_URI so the app connects to the containerized mongo
+      # service name "mongo" is resolved by Docker's internal DNS
+      - MONGODB_URI=mongodb://mongo:27017/freightflow
+      - NODE_ENV=production
+    volumes:
+      # Mount local source so edits reflect inside the container
+      # The anonymous volume for node_modules prevents the host's
+      # node_modules from overwriting the container's installed ones
+      - .:/app
+      - /app/node_modules
+
+# Named volumes are managed by Docker (stored in Docker's data directory)
+volumes:
+  mongo_data:
+    driver: local

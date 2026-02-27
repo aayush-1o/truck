@@ -1,0 +1,44 @@
+# .dockerignore
+# Like .gitignore but for Docker's build context.
+# Files listed here are NOT sent to the Docker daemon at all —
+# smaller context = faster builds and no accidental secret leaks.
+
+# Dependencies — rebuilt inside the image by npm ci
+node_modules/
+
+# Secrets — the whole point of this file
+.env
+.env.*
+*.pem
+*.key
+
+# Tests — not needed in the production image
+test/
+coverage/
+*.test.js
+
+# Local logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Version control
+.git/
+.gitignore
+
+# CI/CD config (not needed at runtime)
+.github/
+
+# Docker files themselves (avoid recursive context)
+Dockerfile
+docker-compose*.yml
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor config
+.vscode/
+.idea/
+*.swp

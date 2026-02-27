@@ -1,7 +1,8 @@
-# 🚛 FreightFlow — Logistics & Freight Management Platform
+# 🚛 FreightFlow — B2B Logistics & Freight Management Platform
 
-> A full-stack logistics platform for shippers, drivers, and admins — built with **Node.js**, **Express**, **MongoDB**, and **Vanilla JS**.
+> A production-hardened full-stack logistics platform for shippers, drivers, and admins — built with **Node.js**, **Express**, **MongoDB**, and **Vanilla JS**.
 
+[![CI](https://github.com/aayush-1o/truck/actions/workflows/ci.yml/badge.svg)](https://github.com/aayush-1o/truck/actions/workflows/ci.yml)
 [![Phase](https://img.shields.io/badge/Phase-4%20Complete-brightgreen)](https://github.com/aayush-1o/truck)
 [![Live](https://img.shields.io/badge/Live-truck--production.up.railway.app-blue)](https://truck-production.up.railway.app)
 [![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20Express%20%7C%20MongoDB-blue)](https://github.com/aayush-1o/truck)
@@ -11,11 +12,11 @@
 
 ## 📸 Overview
 
-FreightFlow is a role-based freight management platform:
+FreightFlow is a role-based freight management SaaS platform with three user types:
 
-- **Shippers** create and track shipments
-- **Drivers** manage pickups and deliveries
-- **Admins** oversee all users and shipments
+- **Shippers** — create shipments, track packages in real time, pay via Razorpay
+- **Drivers** — receive assignments, update status on the go, manage earnings
+- **Admins** — oversee all users and shipments, view analytics
 
 ---
 
@@ -27,34 +28,100 @@ FreightFlow is a role-based freight management platform:
 | Phase 2 | ✅ Complete | Frontend-Backend Integration, Real Dashboards |
 | Phase 3 | ✅ Complete | Payments (Razorpay), Real-time Tracking, Notifications |
 | Phase 4 | ✅ Complete | Analytics Charts, Live Map, Rating System, Dark Mode, Email Alerts |
+| Week 1 | ✅ Complete | Critical bug fixes and security hardening |
+| Week 2 | ✅ Complete | Jest test suite (20 tests), ORS geocoding, JWT refresh token flow |
+| Week 3 | ✅ Complete | Docker, GitHub Actions CI/CD, professional documentation |
 
 🌐 **Live Demo:** https://truck-production.up.railway.app
 
 ---
 
-## 🏗 Tech Stack
+## 🏗 Architecture
 
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB + Mongoose |
-| **Auth** | JWT, bcryptjs |
-| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
-| **Real-time** | Socket.io |
-| **Maps** | Leaflet.js (OpenStreetMap) |
-| **Charts** | Chart.js |
-| **Payments** | Razorpay (test mode) |
-| **Email** | Nodemailer |
-| **Hosting** | Railway (backend) + MongoDB Atlas (DB) |
-| **Icons** | Lucide Icons |
+```mermaid
+graph TD
+    Client["Client — Vanilla JS<br/>api-client.js<br/>(auto-refresh interceptor)"]
+
+    Client -->|"Bearer access token<br/>+ HttpOnly refresh cookie"| Routes
+
+    subgraph Express["Express Server — server.js"]
+        Routes["Routes<br/>/api/auth · /api/shipments<br/>/api/drivers · /api/payments"]
+        Auth["middleware/auth.js<br/>protect() + authorize()"]
+        Routes --> Auth
+    end
+
+    Auth -->|"JWT verify<br/>+ DB isActive check"| DB
+
+    subgraph DB["MongoDB — Mongoose"]
+        User["User model"]
+        Driver["Driver model"]
+        Shipment["Shipment model"]
+        Payment["Payment model"]
+        Notification["Notification model"]
+    end
+
+    Routes -->|"Driving distance"| ORS["OpenRouteService<br/>Geocoding API"]
+    Routes -->|"Order + verify HMAC"| Razorpay["Razorpay<br/>Payments"]
+    Routes -->|"Shipment events"| SocketIO["Socket.io<br/>Real-time rooms"]
+    Routes -->|"Assignments + delivery alerts"| Email["Nodemailer<br/>Gmail SMTP"]
+```
+
+**Key design decisions:**
+- **Separate `Driver` model** — vehicle attributes, availability, and earnings don't belong in `User`. Avoids null-heavy schema and makes role-based queries efficient.
+- **Two-token auth** — 15-minute access tokens in memory, 7-day refresh tokens in `HttpOnly` cookies. XSS can't steal the refresh token; CSRF is blocked by `sameSite: strict`.
+- **Geocoding fallback** — `utils/geocoding.js` always returns a number. If ORS is down or unconfigured, pricing uses a 100km default. Shipment creation never fails due to a third-party outage.
+
+---
+
+## 🧪 Testing
+
+```bash
+npm test                 # Run all 20 tests
+npm run test:watch       # Watch mode for TDD
+npm run test:coverage    # Coverage report in /coverage
+```
+
+| Suite | Tests | What's Covered |
+|-------|-------|----------------|
+| `auth.test.js` | 8 | Registration, login, role auth, user enumeration prevention |
+| `shipments.test.js` | 6 | CRUD, role guards, shipper isolation, status updates |
+| `payments.test.js` | 2 | Tampered vs valid HMAC-SHA256 Razorpay signature |
+| `drivers.test.js` | 4 | Profile creation, availability toggle, GPS location, role guard |
+
+Tests use `mongodb-memory-server` — no external MongoDB required to run them.
+
+---
+
+## 🐳 Docker
+
+```bash
+# Build the production image
+docker build -t freightflow .
+
+# Run with env file
+docker run -p 5000:5000 --env-file .env freightflow
+
+# Run full stack (app + MongoDB) locally
+docker-compose up
+
+# Rebuild after package.json changes
+docker-compose up --build
+
+# Stop and wipe volumes (clean slate)
+docker-compose down -v
+```
+
+The Dockerfile uses a **multi-stage build**:
+1. **Stage 1 (`deps`)** — installs only production dependencies with `npm ci --only=production`
+2. **Stage 2 (`runner`)** — copies `node_modules` from Stage 1, removes `.env`/`seed.js` from image, runs as non-root user `freightflow` (uid 1001)
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v16+)
-- MongoDB (local or Atlas)
+- Node.js v20+
+- MongoDB (local or Atlas) **or** Docker
 
 ### 1. Clone the Repository
 ```bash
@@ -67,154 +134,151 @@ cd truck
 npm install
 ```
 
-### 3. Set Up Environment
+### 3. Configure Environment
 ```bash
 cp .env.example .env
+# Edit .env with your values (see Environment Variables table below)
 ```
 
-Edit `.env` with your values:
-```env
-MONGODB_URI=mongodb://localhost:27017/freightflow
-JWT_SECRET=your_jwt_secret_here
-PORT=5000
-
-# Optional - for forgot-password emails
-EMAIL_USER=your@gmail.com
-EMAIL_PASS=your_app_password
-```
-
-### 4. Install & Start MongoDB (Mac)
+### 4. Run the Development Server
 ```bash
-brew tap mongodb/brew
-brew install mongodb-community
-brew services start mongodb-community
+npm run dev
 ```
 
-### 5. Create Admin Account
+Server starts at **http://localhost:5000**
+
+### 5. Run with Docker (no MongoDB install needed)
 ```bash
-node seed.js
-```
-**Admin credentials:** `admin@freightflow.com` / `admin123456`
-
-### 6. Start the Server
-```bash
-npm start
-```
-
-Open → **http://localhost:5000/pages/login.html**
-
----
-
-## 📂 Project Structure
-
-```
-truck/
-├── server.js                    # Express server + auth routes
-├── seed.js                      # Admin user creator
-├── .env                         # Environment config
-│
-├── models/
-│   ├── User.js                  # User schema (admin/shipper/driver)
-│   ├── Shipment.js              # Shipment schema + tracking
-│   └── Driver.js                # Driver profile + stats
-│
-├── routes/
-│   ├── shipments.js             # CRUD, tracking, status updates
-│   ├── users.js                 # User management (admin)
-│   └── drivers.js               # Driver profiles, stats, availability
-│
-├── middleware/
-│   ├── auth.js                  # JWT protect + role authorize
-│   └── validator.js             # Input validation
-│
-├── pages/
-│   ├── login.html               # Login → role-based redirect
-│   ├── register.html            # New account creation
-│   ├── forgot-password.html     # Request password reset
-│   ├── reset-password.html      # Set new password via token
-│   ├── admin-dashboard.html     # Admin view (all users + shipments)
-│   ├── shipper-dashboard.html   # Shipper view (create + track)
-│   └── driver-dashboard.html    # Driver view (jobs + earnings)
-│
-└── assets/
-    ├── js/
-    │   ├── api-client.js        # Central API client + auth guard
-    │   ├── admin-dashboard.js   # Admin dashboard logic
-    │   ├── shipper-dashboard.js # Shipper dashboard logic
-    │   └── driver-dashboard.js  # Driver dashboard logic
-    └── css/
-        └── style.css
+docker-compose up
 ```
 
 ---
 
-## 🔌 API Reference
+## 🌍 Environment Variables
 
-### Auth Routes
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| `POST` | `/api/register` | Public | Register new user |
-| `POST` | `/api/login` | Public | Login + get JWT token |
-| `POST` | `/api/forgot-password` | Public | Request password reset email |
-| `POST` | `/api/verify-token` | Public | Validate reset token |
-| `POST` | `/api/reset-password` | Public | Set new password |
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `MONGODB_URI` | ✅ | MongoDB connection string | `mongodb://localhost:27017/freightflow` |
+| `JWT_SECRET` | ✅ | Access token signing secret (15min) | `your_long_random_string_here` |
+| `JWT_REFRESH_SECRET` | ✅ | Refresh token signing secret (7 days) | `different_long_random_string` |
+| `PORT` | ❌ | Server port (default: 5000) | `5000` |
+| `CORS_ORIGIN` | ✅ prod | Allowed frontend origin(s), comma-separated | `https://truck-production.up.railway.app` |
+| `ORS_API_KEY` | ❌ | OpenRouteService key for real driving distances | `eyJ...` |
+| `RAZORPAY_KEY_ID` | ✅ | Razorpay public key | `rzp_test_...` |
+| `RAZORPAY_KEY_SECRET` | ✅ | Razorpay secret key | `...` |
+| `EMAIL_USER` | ❌ | Gmail address for shipment notifications | `you@gmail.com` |
+| `EMAIL_PASS` | ❌ | Gmail App Password (not account password) | `xxxx xxxx xxxx xxxx` |
+| `NODE_ENV` | ❌ | Environment (`development`/`production`/`test`) | `production` |
 
-### Shipment Routes
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| `POST` | `/api/shipments` | Shipper | Create shipment |
-| `GET` | `/api/shipments` | All | Get shipments (role-filtered) |
-| `GET` | `/api/shipments/track/:id` | Public | Track by tracking ID |
-| `GET` | `/api/shipments/:id` | Authorized | Get single shipment |
-| `PATCH` | `/api/shipments/:id/status` | Driver/Admin | Update status |
-| `PUT` | `/api/shipments/:id` | Shipper/Admin | Edit shipment |
-| `DELETE` | `/api/shipments/:id` | Shipper/Admin | Cancel shipment |
-
-### User Routes
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| `GET` | `/api/users` | Admin | All users |
-| `GET` | `/api/users/profile` | Private | Current user profile |
-| `PUT` | `/api/users/profile` | Private | Update profile |
-| `GET` | `/api/users/stats` | Admin | User statistics |
-| `PATCH` | `/api/users/:id/role` | Admin | Change user role |
-| `DELETE` | `/api/users/:id` | Admin | Deactivate user |
-
-### Driver Routes
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| `POST` | `/api/drivers` | Driver | Create driver profile |
-| `GET` | `/api/drivers` | Admin/Shipper | All drivers |
-| `GET` | `/api/drivers/profile` | Driver | Own profile |
-| `GET` | `/api/drivers/stats` | Driver | Earnings + stats |
-| `PUT` | `/api/drivers/profile` | Driver | Update profile |
-| `PUT` | `/api/drivers/location` | Driver | Update location |
-| `PATCH` | `/api/drivers/availability` | Driver | Toggle availability |
-| `GET` | `/api/drivers/earnings` | Driver | Earnings history |
+> ⚠️ **Never commit `.env` to git.** It is in `.gitignore` and excluded from the Docker image via `.dockerignore`.
 
 ---
 
-## 👤 User Roles
+## 🏗 Tech Stack
 
-| Role | Permissions |
-|------|-------------|
-| **Admin** | View all users, all shipments, manage roles |
-| **Shipper** | Create shipments, view own shipments, track deliveries |
-| **Driver** | Accept jobs, update delivery status, manage availability |
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Node.js 20, Express.js 5 |
+| **Database** | MongoDB 7 + Mongoose |
+| **Auth** | JWT (access + refresh tokens), bcryptjs |
+| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
+| **Real-time** | Socket.io |
+| **Maps** | Leaflet.js (OpenStreetMap) |
+| **Geocoding** | OpenRouteService Directions API |
+| **Charts** | Chart.js |
+| **Payments** | Razorpay (HMAC-SHA256 verification) |
+| **Email** | Nodemailer + Gmail SMTP |
+| **Testing** | Jest + Supertest + mongodb-memory-server |
+| **CI/CD** | GitHub Actions → Railway |
+| **Containers** | Docker (multi-stage), Docker Compose |
+| **Hosting** | Railway (auto-deploy on merge to main) |
 
 ---
 
 ## 🔒 Security
 
-- Passwords hashed with **bcrypt** (salt rounds: 12)
-- Authentication via **JWT** (7-day expiry)
-- Role-based route protection middleware
-- Password reset tokens expire after 1 hour
+| Measure | Implementation |
+|---------|----------------|
+| **Password hashing** | `bcrypt` with 12 salt rounds |
+| **Authentication** | JWT access tokens (15min) + HttpOnly `sameSite: strict` refresh cookies (7 days) |
+| **Payment integrity** | HMAC-SHA256 Razorpay signature verification before marking any payment complete |
+| **Rate limiting** | `express-rate-limit`: 5 req/15min on `/login` and `/register`, 3 req/hr on `/forgot-password` |
+| **CORS** | Locked to `CORS_ORIGIN` env var — no wildcard in production |
+| **Input validation** | `express-validator` middleware on all write routes |
+| **XSS prevention** | All notification content uses `textContent` (never `innerHTML`) |
+| **Secret management** | Fail-fast on startup if `JWT_SECRET` or `MONGODB_URI` missing |
+| **Static serving** | `express.static('public/')` only — project root never served |
+
+To report a security vulnerability: see [SECURITY.md](SECURITY.md)
 
 ---
 
-## 📧 Contact
+## � API Endpoints
 
-**Ayush** — [ayushh.ofc10@gmail.com](mailto:ayushh.ofc10@gmail.com)
+### Auth
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/register` | — | Create new account |
+| `POST` | `/api/login` | — | Login, returns access token + sets refresh cookie |
+| `POST` | `/api/refresh` | Cookie | Issue new access token using refresh cookie |
+| `POST` | `/api/logout` | — | Clear refresh token cookie |
+| `POST` | `/api/forgot-password` | — | Send reset link (always returns 200) |
+| `POST` | `/api/reset-password` | — | Reset password with token |
 
-GitHub: [@aayush-1o](https://github.com/aayush-1o)
+### Shipments
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/shipments` | Shipper | Create shipment (real driving distance price) |
+| `GET` | `/api/shipments` | Any | List shipments (scoped by role) |
+| `GET` | `/api/shipments/:id` | Any | Get single shipment |
+| `PATCH` | `/api/shipments/:id/status` | Driver/Admin | Update status |
+| `POST` | `/api/shipments/:id/rate` | Shipper | Rate driver |
+| `GET` | `/api/shipments/track/:trackingId` | Public | Public tracking |
+
+### Drivers
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/drivers` | Driver | Create profile |
+| `PATCH` | `/api/drivers/availability` | Driver | Toggle availability |
+| `PUT` | `/api/drivers/location` | Driver | Update GPS coordinates |
+| `GET` | `/api/drivers/stats` | Driver | Earnings and stats |
+
+### Payments
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/payments/order` | Shipper | Create Razorpay order |
+| `POST` | `/api/payments/verify` | Shipper | Verify HMAC signature |
+| `GET` | `/api/payments/history` | Any | Payment history |
+
+### System
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/health` | — | Health check (uptime, db status) |
+
+---
+
+## 🤝 Contributing
+
+```bash
+# 1. Fork and clone
+git clone https://github.com/aayush-1o/truck.git
+
+# 2. Create a feature branch
+git checkout -b feat/your-feature-name
+
+# 3. Make changes, then run tests
+npm test
+
+# 4. Commit and push
+git push origin feat/your-feature-name
+
+# 5. Open a Pull Request — CI runs automatically
+```
+
+PRs must pass all 20 tests before merge.
+
+---
+
+## � License
+
+MIT © [Ayush](https://github.com/aayush-1o)

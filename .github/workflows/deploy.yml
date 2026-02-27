@@ -1,0 +1,55 @@
+# .github/workflows/deploy.yml
+# Deploys to Railway ONLY when a commit lands on main.
+# This file intentionally does NOT run tests — that's ci.yml's job.
+# deploys only fire after ci.yml passes because we use branch protection rules.
+#
+# SETUP REQUIRED (one-time):
+#   1. Install Railway CLI locally: npm install -g @railway/cli
+#   2. Login: railway login
+#   3. Link this repo to your Railway project: railway link
+#   4. Get your token: railway whoami --token  OR from railway.app/account/tokens
+#   5. Add to GitHub: repo → Settings → Secrets and variables → Actions
+#      → New repository secret → Name: RAILWAY_TOKEN, Value: <your token>
+#   6. Set all production env vars in Railway dashboard (NOT here — never in code)
+
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------------------------------
+      # 1. Checkout code — Railway CLI needs the repo to be present
+      # --------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------------
+      # 2. Set up Node.js (needed to run railway CLI)
+      # --------------------------------------------------------
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # --------------------------------------------------------
+      # 3. Install Railway CLI
+      # --------------------------------------------------------
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      # --------------------------------------------------------
+      # 4. Deploy to Railway
+      #    RAILWAY_TOKEN is a GitHub Actions secret (never hardcode!)
+      #    --service freightflow matches your Railway service name
+      # --------------------------------------------------------
+      - name: Deploy to Railway
+        run: railway up --service freightflow
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

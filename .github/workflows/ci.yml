@@ -1,0 +1,78 @@
+# .github/workflows/ci.yml
+# Runs on every push to main AND every Pull Request targeting main.
+# Outcome: green ✅ or red ❌ check on every PR — no broken code merges.
+#
+# NOTE: mongodb-memory-server downloads and manages its own MongoDB binary,
+# so we do NOT need to add a mongodb service here.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------------------------------
+      # 1. Checkout the repository
+      # --------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------------
+      # 2. Set up Node.js 20 with npm cache
+      #    The "cache" option caches ~/.npm between runs — speeds
+      #    up subsequent CI runs significantly.
+      # --------------------------------------------------------
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # --------------------------------------------------------
+      # 3. Install dependencies (clean install from package-lock.json)
+      #    npm ci is faster and stricter than npm install for CI
+      # --------------------------------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # --------------------------------------------------------
+      # 4. Run the test suite
+      #    mongodb-memory-server will download MongoDB binary on
+      #    first run (cached by setup-node npm cache after that)
+      # --------------------------------------------------------
+      - name: Run tests
+        run: npm test
+        env:
+          # Test secrets — safe to put here, these are not production values
+          JWT_SECRET: test_secret_for_ci_not_production
+          JWT_REFRESH_SECRET: test_refresh_secret_for_ci_not_production
+          NODE_ENV: test
+          # Do NOT set MONGODB_URI — mongodb-memory-server provides it
+
+      # --------------------------------------------------------
+      # 5. Upload coverage report as a downloadable artifact
+      #    Optional but impressive in a portfolio review
+      # --------------------------------------------------------
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        env:
+          JWT_SECRET: test_secret_for_ci_not_production
+          JWT_REFRESH_SECRET: test_refresh_secret_for_ci_not_production
+          NODE_ENV: test
+        continue-on-error: true  # Don't fail CI if coverage step has issues
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
